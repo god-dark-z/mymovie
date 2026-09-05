@@ -1,0 +1,32 @@
+# Netlify deployment for Cineora.
+#
+# `@netlify/plugin-nextjs` is what makes an App Router build work here: it maps
+# server components, the two route handlers under /api and every ISR page onto
+# Netlify Functions and the Netlify cache, and it points `next/image` at
+# Netlify's image CDN using the `remotePatterns` allowlist in next.config.ts.
+#
+# `publish` stays `.next` on purpose. This is a server build, not a static
+# export — pointing it at `out/` would deploy an empty site, and adding
+# `output: 'export'` to next.config.ts would break the search route handlers and
+# every dynamically rendered title page.
+
+[build]
+  command = "npm run build"
+  publish = ".next"
+
+[build.environment]
+  NODE_VERSION = "22"
+  NEXT_TELEMETRY_DISABLED = "1"
+  # Metadata comes from a key-free public addon, so there is no API key to set.
+  # The only optional variable is CINEORA_CINEMETA_ORIGIN, and only if you run a
+  # mirror of the addon — see docs/INTEGRATIONS.md.
+
+[[plugins]]
+  package = "@netlify/plugin-nextjs"
+
+# `netlify dev` proxies the real Next dev server rather than guessing a static
+# root, so route handlers and server components behave as they do in production.
+[dev]
+  command = "npm run dev"
+  framework = "#custom"
+  targetPort = 3000

@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64">
+  <defs>
+    <linearGradient id="sweep" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#ffffff"/><stop offset="30%" stop-color="#cfd4de"/><stop offset="62%" stop-color="#f4506a"/><stop offset="100%" stop-color="#b0142c"/></linearGradient>
+    <linearGradient id="tile" x1="0" y1="0" x2="0.4" y2="1">
+      <stop offset="0%" stop-color="#12151d"/>
+      <stop offset="55%" stop-color="#090b11"/>
+      <stop offset="100%" stop-color="#05060a"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="0.78" cy="0.12" r="0.8">
+      <stop offset="0%" stop-color="#d4213d" stop-opacity="0.3"/>
+      <stop offset="70%" stop-color="#d4213d" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <rect width="64" height="64" rx="15.04" fill="url(#tile)"/>
+  <rect width="64" height="64" rx="15.04" fill="url(#glow)"/>
+  <g transform="translate(7.04 7.04) scale(0.78)" fill="none"
+      stroke-linecap="round" stroke-linejoin="round">
+    <path d="M42.57 9.34 A25 25 0 1 0 54.66 21.43" stroke="url(#sweep)" stroke-width="5"/>
+    <path d="M17.44 26.7 A15.5 15.5 0 0 0 17.95 38.55" stroke="url(#sweep)" stroke-width="2.5" opacity="0.55"/>
+    <path d="M25.5 22.5 L44.5 32 L25.5 41.5 Z" fill="url(#sweep)" stroke="url(#sweep)" stroke-width="3"/>
+  </g>
+  <rect x="0.5" y="0.5" width="63" height="63" rx="14.54"
+    fill="none" stroke="#ffffff" stroke-opacity="0.10"/>
+</svg>

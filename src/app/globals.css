@@ -1,0 +1,756 @@
+@import 'tailwindcss';
+
+/* ==========================================================================
+   CINEORA — design tokens
+   An original cinematic-luxury system: black glass, soft white, deep ruby.
+   Nothing here is derived from another streaming service's brand or UI.
+   ========================================================================== */
+
+@theme {
+  /* ---- Typography ------------------------------------------------------ */
+  --font-sans:
+    var(--font-jakarta), ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --font-display: var(--font-sora), var(--font-jakarta), ui-sans-serif, system-ui, sans-serif;
+
+  /* ---- Ink: the black-glass substrate ---------------------------------- */
+  --color-ink-950: #05060a;
+  --color-ink-900: #090b11;
+  --color-ink-850: #0d1017;
+  --color-ink-800: #12151d;
+  --color-ink-700: #191d26;
+  --color-ink-600: #232833;
+  --color-ink-500: #2f3542;
+
+  /* ---- Mist: soft white through silver-grey ---------------------------- */
+  --color-mist-50: #f8f9fb;
+  --color-mist-100: #eef0f5;
+  --color-mist-200: #dcdfe8;
+  --color-mist-300: #bcc2d0;
+  --color-mist-400: #939bad;
+  /* 500 is the workhorse for secondary text, so it is tuned to clear 5:1 against
+     the ink substrate rather than to sit visually midway between 400 and 600. */
+  --color-mist-500: #7b8395;
+  --color-mist-600: #515868;
+
+  /* ---- Ruby: the one accent. Used sparingly, never as a background wash. */
+  --color-ruby-200: #ffc3cd;
+  --color-ruby-300: #ff8b9f;
+  --color-ruby-400: #f4506a;
+  --color-ruby-500: #d4213d;
+  --color-ruby-600: #b0142c;
+  --color-ruby-700: #8a0f22;
+
+  /* ---- Silver / gold: hairlines and the rating star only --------------- */
+  --color-silver-300: #cfd4de;
+  --color-silver-500: #9aa2b1;
+  --color-gold-400: #e8c66a;
+
+  /* ---- Safe-area aware spacing tokens ---------------------------------- */
+  /* Android WebView has no browser chrome, so insets are the only thing that
+     keeps content clear of the status bar, gesture bar and display cutouts. */
+  --spacing-safe-t: env(safe-area-inset-top, 0px);
+  --spacing-safe-b: env(safe-area-inset-bottom, 0px);
+  --spacing-safe-l: env(safe-area-inset-left, 0px);
+  --spacing-safe-r: env(safe-area-inset-right, 0px);
+  --spacing-header: var(--header-h);
+  --spacing-nav: var(--bottom-nav-h);
+  --spacing-gutter: var(--gutter);
+
+  /* ---- Radii ----------------------------------------------------------- */
+  --radius-xs: 0.375rem;
+  --radius-sm: 0.5rem;
+  --radius-md: 0.75rem;
+  --radius-lg: 1rem;
+  --radius-xl: 1.25rem;
+  --radius-2xl: 1.75rem;
+  --radius-3xl: 2.25rem;
+
+  /* ---- Breakpoints: 416px for small handsets, 1920px for cinema displays */
+  --breakpoint-xs: 26rem;
+  --breakpoint-3xl: 120rem;
+
+  /* ---- Motion ---------------------------------------------------------- */
+  --ease-glass: cubic-bezier(0.32, 0.72, 0, 1);
+  --ease-soft: cubic-bezier(0.16, 1, 0.3, 1);
+
+  --animate-fade-in: fade-in 0.4s var(--ease-soft) both;
+  --animate-rise: rise 0.5s var(--ease-soft) both;
+  --animate-shimmer: shimmer 1.7s linear infinite;
+  --animate-drift: drift 30s ease-in-out infinite alternate;
+  --animate-halo: halo 7s ease-in-out infinite;
+  --animate-sheet-in: sheet-in 0.32s var(--ease-glass) both;
+  --animate-pop-in: pop-in 0.24s var(--ease-glass) both;
+  --animate-ring: ring 1.05s linear infinite;
+
+  @keyframes fade-in {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+
+  @keyframes rise {
+    from {
+      opacity: 0;
+      transform: translate3d(0, 14px, 0);
+    }
+    to {
+      opacity: 1;
+      transform: translate3d(0, 0, 0);
+    }
+  }
+
+  @keyframes shimmer {
+    from {
+      background-position: -160% 0;
+    }
+    to {
+      background-position: 260% 0;
+    }
+  }
+
+  @keyframes drift {
+    from {
+      transform: scale(1.04) translate3d(0, 0, 0);
+    }
+    to {
+      transform: scale(1.12) translate3d(-1.5%, -1.5%, 0);
+    }
+  }
+
+  @keyframes halo {
+    0%,
+    100% {
+      opacity: 0.5;
+    }
+    50% {
+      opacity: 0.85;
+    }
+  }
+
+  @keyframes sheet-in {
+    from {
+      opacity: 0;
+      transform: translate3d(0, 100%, 0);
+    }
+    to {
+      opacity: 1;
+      transform: translate3d(0, 0, 0);
+    }
+  }
+
+  @keyframes pop-in {
+    from {
+      opacity: 0;
+      transform: scale(0.96) translate3d(0, 8px, 0);
+    }
+    to {
+      opacity: 1;
+      transform: scale(1) translate3d(0, 0, 0);
+    }
+  }
+
+  @keyframes ring {
+    to {
+      transform: rotate(360deg);
+    }
+  }
+}
+
+/* ==========================================================================
+   Base
+   ========================================================================== */
+
+@layer base {
+  :root {
+    color-scheme: dark;
+
+    /* ---- The floating navigation pill --------------------------------------
+       One control, two anchors: bottom on a handset, top from `md` up. The
+       tokens describe the pill itself; `--header-h` / `--bottom-nav-h` are the
+       room pages must leave for it, and only one of the two is ever non-zero. */
+    --nav-h: 3.75rem;
+    --nav-gap: 0.625rem;
+    --header-h: 0rem;
+    --bottom-nav-h: calc(var(--nav-h) + var(--nav-gap));
+    --gutter: 1rem;
+
+    /* Vertical room the watch screen reserves for its own header and control
+       bar, so a 16:9 stage can never push either out of the viewport. */
+    --player-chrome: 10.5rem;
+
+    /* Glass is tuned per level: tint, blur radius, hairline strength.
+       Level 1 is an inline surface on an already-dark page, so a white wash is
+       what lifts it off the background. Levels 2 and 3 float over arbitrary
+       artwork with no scrim guaranteed underneath, so they tint dark instead —
+       a dark pane can stay far more transparent than a light one and still hold
+       white text. */
+    --glass-tint-1: rgb(255 255 255 / 0.05);
+    --glass-tint-2: rgb(10 12 19 / 0.5);
+    --glass-tint-3: rgb(9 11 18 / 0.6);
+    --glass-line: rgb(255 255 255 / 0.09);
+    --glass-line-strong: rgb(255 255 255 / 0.16);
+
+    /* Blur radius decides how much of the world behind the pane survives. It is
+       kept deliberately small — real glass refracts, it does not frost, so the
+       artwork behind a panel should still be recognisable rather than smeared
+       into a grey wash. A short radius is also the cheap one: `backdrop-filter`
+       cost grows with the sampled radius as well as the area, so clarity and
+       frame budget pull the same direction here. */
+    --glass-blur-2: 6px;
+    --glass-blur-3: 10px;
+    --nav-blur: 7px;
+    /* A light saturation lift compensates for the tint washing colour out; with
+       this little blur the colours behind are real, so it stays gentle. */
+    --glass-sat: 135%;
+
+    /* The specular pass. This is what actually reads as glass: a bright top
+       edge falling off to nothing, plus a faint bounce along the bottom. It
+       costs one gradient fill, which is why it can go on surfaces that repeat. */
+    --glass-sheen: linear-gradient(
+      180deg,
+      rgb(255 255 255 / 0.1) 0%,
+      rgb(255 255 255 / 0.035) 34%,
+      rgb(255 255 255 / 0) 64%,
+      rgb(255 255 255 / 0.022) 100%
+    );
+  }
+
+  @media (min-width: 48rem) {
+    :root {
+      --nav-h: 3.5rem;
+      --nav-gap: 0.875rem;
+      --header-h: calc(var(--nav-h) + var(--nav-gap) * 2);
+      --bottom-nav-h: 0rem;
+      --gutter: 1.75rem;
+      --player-chrome: 13.5rem;
+      /* A desktop pane is larger, so it can carry a touch more radius without
+         losing the detail behind it. */
+      --glass-blur-2: 8px;
+      --glass-blur-3: 12px;
+      --nav-blur: 9px;
+      --glass-sat: 140%;
+    }
+  }
+
+  @media (min-width: 90rem) {
+    :root {
+      --gutter: 2.5rem;
+    }
+  }
+
+  * {
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  html {
+    /* `clip` rather than `hidden`: hidden turns the root into a scroll
+       container and breaks `position: sticky` for the header. */
+    overflow-x: clip;
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+    scroll-behavior: smooth;
+  }
+
+  body {
+    overflow-x: clip;
+    max-width: 100%;
+    min-height: 100svh;
+    background-color: var(--color-ink-950);
+    color: var(--color-mist-100);
+    font-family: var(--font-sans);
+    font-feature-settings: 'cv11', 'ss01';
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    /* Stops the whole page bouncing behind a WebView. */
+    overscroll-behavior-y: none;
+  }
+
+  /* A single fixed ambience layer instead of per-section gradients: one paint,
+     no repaint on scroll. */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+    background:
+      radial-gradient(120% 80% at 50% -10%, rgb(212 33 61 / 0.13) 0%, transparent 58%),
+      radial-gradient(90% 60% at 8% 8%, rgb(120 140 190 / 0.06) 0%, transparent 60%),
+      linear-gradient(180deg, var(--color-ink-950) 0%, #04050a 100%);
+  }
+
+  h1,
+  h2,
+  h3,
+  h4 {
+    font-family: var(--font-display);
+    letter-spacing: -0.018em;
+    text-wrap: balance;
+  }
+
+  ::selection {
+    background: rgb(212 33 61 / 0.35);
+    color: var(--color-mist-50);
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--color-ruby-400);
+    outline-offset: 2px;
+    border-radius: var(--radius-sm);
+  }
+
+  /* Keyboard focus only — a pointer press should not leave a ring behind. */
+  :focus:not(:focus-visible) {
+    outline: none;
+  }
+
+  input,
+  textarea,
+  select,
+  button {
+    font: inherit;
+    color: inherit;
+  }
+
+  /* iOS/WebView zooms the page when a font under 16px receives focus. */
+  input,
+  textarea,
+  select {
+    font-size: max(1rem, 1em);
+  }
+
+  input[type='search']::-webkit-search-cancel-button {
+    display: none;
+  }
+
+  /* Slim, low-contrast scrollbar. Desktop only concern, but harmless. */
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: rgb(255 255 255 / 0.14) transparent;
+  }
+
+  ::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: rgb(255 255 255 / 0.12);
+    border: 3px solid transparent;
+    background-clip: content-box;
+    border-radius: 999px;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: rgb(255 255 255 / 0.22);
+    background-clip: content-box;
+  }
+
+  img,
+  video,
+  iframe {
+    max-width: 100%;
+  }
+
+  /* Honour the OS setting: keep opacity transitions, drop movement. */
+  @media (prefers-reduced-motion: reduce) {
+    html {
+      scroll-behavior: auto;
+    }
+
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+}
+
+/* ==========================================================================
+   Liquid glass
+
+   One recipe, applied at four strengths so depth reads as hierarchy instead of
+   decoration:
+     1     resting surfaces — cards, chips, badges, inline panels
+     2     floating surfaces — dropdowns, toolbars, the player bar
+     3     modal surfaces — dialogs, bottom sheets, toasts
+     flat  level-3 paint with the blur removed, for the small controls that sit
+           on top of poster artwork
+
+   The look is a tint + a specular sheen gradient + a rim highlight; only levels
+   2 and 3 add `backdrop-filter`. That split is the whole performance story:
+   `backdrop-filter` forces a composited layer and a re-blur of everything
+   behind it, so it is spent on chrome that is few and fixed and kept off any
+   surface that repeats per item. A grid of 60 posters therefore costs zero
+   backdrop passes.
+   ========================================================================== */
+
+@layer components {
+  /* The shared pass — no blur, safe to repeat dozens of times per page. */
+  .glass-1,
+  .glass-2,
+  .glass-3,
+  .glass-flat,
+  .glass-nav {
+    position: relative;
+    background-color: var(--glass-tint-1);
+    background-image: var(--glass-sheen);
+    border: 1px solid var(--glass-line);
+    box-shadow:
+      inset 0 1px 0 0 rgb(255 255 255 / 0.09),
+      inset 0 -1px 0 0 rgb(255 255 255 / 0.03);
+  }
+
+  .glass-2 {
+    background-color: var(--glass-tint-2);
+    box-shadow:
+      inset 0 1px 0 0 rgb(255 255 255 / 0.12),
+      inset 0 -1px 0 0 rgb(255 255 255 / 0.04),
+      0 12px 40px -14px rgb(0 0 0 / 0.7);
+  }
+
+  .glass-3 {
+    background-color: var(--glass-tint-3);
+    border-color: var(--glass-line-strong);
+    box-shadow:
+      inset 0 1px 0 0 rgb(255 255 255 / 0.16),
+      inset 0 -1px 0 0 rgb(255 255 255 / 0.05),
+      0 28px 70px -22px rgb(0 0 0 / 0.85);
+  }
+
+  /* Blur only where the browser can actually do it, so an engine without
+     `backdrop-filter` gets a solid tint instead of an unreadable pane. */
+  @supports (backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px)) {
+    .glass-2 {
+      -webkit-backdrop-filter: blur(var(--glass-blur-2)) saturate(var(--glass-sat));
+      backdrop-filter: blur(var(--glass-blur-2)) saturate(var(--glass-sat));
+    }
+
+    .glass-3 {
+      -webkit-backdrop-filter: blur(var(--glass-blur-3)) saturate(var(--glass-sat));
+      backdrop-filter: blur(var(--glass-blur-3)) saturate(var(--glass-sat));
+    }
+  }
+
+  @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+    .glass-2 {
+      background-color: rgb(9 11 17 / 0.95);
+    }
+
+    .glass-3 {
+      background-color: rgb(5 6 10 / 0.97);
+    }
+  }
+
+  /* Level 1 never blurs, so it carries a little more tint of its own to stay
+     legible where it lands on artwork. */
+  .glass-1 {
+    background-color: rgb(255 255 255 / 0.055);
+  }
+
+  /* One or two of these ride on every poster. A dark plate keeps white text
+     legible over bright artwork without spending a backdrop pass; it is the one
+     glass level that trades some transparency for contrast, because it is the
+     only one that lands directly on a bright image. */
+  .glass-flat {
+    background-color: rgb(9 11 17 / 0.58);
+    border-color: var(--glass-line-strong);
+    box-shadow:
+      inset 0 1px 0 0 rgb(255 255 255 / 0.14),
+      0 8px 24px -10px rgb(0 0 0 / 0.8);
+  }
+
+  /* The navigation pill.
+     A pill is measurably cheaper than the full-width bar it replaces: a fixed
+     element's backdrop has to be re-blurred as the page scrolls behind it, and
+     that cost scales with blurred area — so a 640px pill re-blurs roughly a
+     third of what a 1920px bar did. Nothing here transitions, either;
+     animating `backdrop-filter` re-runs the blur every frame. */
+  .glass-nav {
+    background-color: rgb(8 10 16 / 0.66);
+    border-color: var(--glass-line-strong);
+    box-shadow:
+      inset 0 1px 0 0 rgb(255 255 255 / 0.18),
+      inset 0 -1px 0 0 rgb(255 255 255 / 0.06),
+      0 18px 44px -18px rgb(0 0 0 / 0.9),
+      0 2px 10px -5px rgb(0 0 0 / 0.6);
+  }
+
+  /* Because the pane stays transparent enough to read a poster through, the
+     labels have to survive landing on a bright one. A shadow does that without
+     thickening the tint — it costs paint, not a compositing layer, which is the
+     opposite trade to turning the blur back up.
+
+     `button` is named explicitly: form controls do not inherit `text-shadow`,
+     so the Search cell would otherwise be the one unshadowed label in the row. */
+  .glass-nav,
+  .glass-nav button {
+    text-shadow: 0 1px 3px rgb(0 0 0 / 0.55);
+  }
+
+  .glass-nav svg {
+    filter: drop-shadow(0 1px 2px rgb(0 0 0 / 0.5));
+  }
+
+  @supports (backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px)) {
+    .glass-nav {
+      /* Transparent enough that a poster passing underneath stays recognisable —
+         that see-through quality is the effect, not a side effect.
+
+         It cannot go much further than this. A translucent pane over arbitrary
+         artwork has no contrast guarantee: at 34% tint a white poster
+         composites to about #ababae, where a grey label is nearly invisible.
+         46% roughly halves that washout while a short blur radius keeps the
+         image behind sharp, and the halo below carries the rest. Anyone who
+         needs a real guarantee gets the opaque bar in the media query further
+         down. */
+      background-color: rgb(8 10 16 / 0.46);
+      -webkit-backdrop-filter: blur(var(--nav-blur)) saturate(150%);
+      backdrop-filter: blur(var(--nav-blur)) saturate(150%);
+    }
+  }
+
+  @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+    .glass-nav {
+      background-color: rgb(7 9 14 / 0.96);
+    }
+  }
+
+  /* The lit chip behind the current destination. Deliberately unblurred: it
+     sits inside an already-blurred pane, where a second backdrop pass buys
+     nothing visible and costs another composited layer. */
+  .glass-pill {
+    background-color: rgb(255 255 255 / 0.1);
+    background-image: linear-gradient(180deg, rgb(255 255 255 / 0.1), rgb(255 255 255 / 0.015));
+    box-shadow:
+      inset 0 1px 0 0 rgb(255 255 255 / 0.2),
+      inset 0 0 0 1px rgb(255 255 255 / 0.05),
+      0 4px 12px -6px rgb(0 0 0 / 0.65);
+  }
+
+  /* Just the specular pass, for controls that bring their own tint (chips,
+     inputs). One gradient fill, no layer, no blur. */
+  .glass-sheen {
+    background-image: var(--glass-sheen);
+  }
+
+  /* The pill's brand tile: a lit ruby chip carrying the mark in mono white. */
+  .brand-tile {
+    background-image: linear-gradient(150deg, var(--color-ruby-400), var(--color-ruby-600));
+    box-shadow:
+      inset 0 1px 0 0 rgb(255 255 255 / 0.3),
+      0 6px 18px -8px rgb(212 33 61 / 0.85);
+  }
+
+  /* Some platforms and users ask for less transparency — and a device that
+     reports it is usually one that would rather not composite blurs at all.
+     `prefers-contrast: more` joins it because that is the setting a reader
+     turns on when translucent chrome is not legible enough; both get an opaque
+     surface with a measurable contrast ratio instead of a composited guess. */
+  @media (prefers-reduced-transparency: reduce), (prefers-contrast: more) {
+    .glass-2,
+    .glass-3,
+    .glass-nav {
+      -webkit-backdrop-filter: none;
+      backdrop-filter: none;
+    }
+
+    .glass-2 {
+      background-color: rgb(9 11 17 / 0.96);
+    }
+
+    .glass-3,
+    .glass-nav {
+      background-color: rgb(6 8 13 / 0.97);
+    }
+  }
+
+  /* A hairline that fades toward the edges — reads as bevelled glass. */
+  .hairline-top::before {
+    content: '';
+    position: absolute;
+    inset-inline: 10%;
+    top: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgb(255 255 255 / 0.28), transparent);
+    pointer-events: none;
+  }
+
+  /* Cinematic skeleton: a slow silver sweep over a dark plate. */
+  .skeleton {
+    position: relative;
+    overflow: hidden;
+    background-color: rgb(255 255 255 / 0.05);
+    background-image: linear-gradient(
+      100deg,
+      transparent 20%,
+      rgb(255 255 255 / 0.07) 42%,
+      rgb(255 255 255 / 0.11) 50%,
+      rgb(255 255 255 / 0.07) 58%,
+      transparent 80%
+    );
+    background-size: 220% 100%;
+    background-repeat: no-repeat;
+    animation: var(--animate-shimmer);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .skeleton {
+      background-image: none;
+    }
+  }
+
+  /* Touch feedback that does not rely on hover. */
+  .tap {
+    transition:
+      transform 0.16s var(--ease-glass),
+      background-color 0.2s var(--ease-glass),
+      border-color 0.2s var(--ease-glass),
+      opacity 0.2s var(--ease-glass);
+    -webkit-user-select: none;
+    user-select: none;
+  }
+
+  .tap:active {
+    transform: scale(0.97);
+  }
+
+  /* Horizontal rail: snap on touch, momentum on desktop, no visible bar. */
+  .rail {
+    display: flex;
+    gap: 0.75rem;
+    overflow-x: auto;
+    overflow-y: hidden;
+    scroll-snap-type: x proximity;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior-x: contain;
+    scrollbar-width: none;
+    /* Room for the card hover lift and its shadow, which `overflow-y` clips. */
+    padding-block: 0.375rem 1rem;
+  }
+
+  @media (width >= 48rem) {
+    .rail {
+      gap: 1rem;
+    }
+  }
+
+  .rail::-webkit-scrollbar {
+    display: none;
+  }
+
+  .rail > * {
+    scroll-snap-align: start;
+    flex: 0 0 auto;
+  }
+
+  .no-scrollbar {
+    scrollbar-width: none;
+  }
+
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+
+  /* The ruby-lit primary action. */
+  .btn-accent {
+    background-image: linear-gradient(160deg, var(--color-ruby-400), var(--color-ruby-600));
+    box-shadow:
+      0 1px 0 0 rgb(255 255 255 / 0.22) inset,
+      0 10px 30px -10px rgb(212 33 61 / 0.65);
+  }
+
+  /* Brushed-silver wordmark treatment used by the logo lockup. */
+  .text-silver {
+    background-image: linear-gradient(
+      104deg,
+      #ffffff 0%,
+      var(--color-mist-200) 34%,
+      var(--color-silver-500) 52%,
+      var(--color-mist-100) 74%,
+      #ffffff 100%
+    );
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+
+  /* Keeps hero copy legible over any backdrop without a heavy scrim. */
+  .text-cinema {
+    text-shadow: 0 2px 24px rgb(0 0 0 / 0.75);
+  }
+
+  .divider {
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgb(255 255 255 / 0.12), transparent);
+  }
+}
+
+/* ==========================================================================
+   Utilities
+   ========================================================================== */
+
+/* Page gutter that also clears landscape display cutouts. */
+@utility gutter-x {
+  padding-inline: calc(var(--gutter) + env(safe-area-inset-left, 0px))
+    calc(var(--gutter) + env(safe-area-inset-right, 0px));
+}
+
+/* `svh` keeps a mobile browser's collapsing toolbar from cropping the layout;
+   in a WebView (no toolbar) it is simply the full viewport. */
+@utility min-h-app {
+  min-height: 100vh;
+  min-height: 100svh;
+}
+
+@utility h-app {
+  height: 100vh;
+  height: 100dvh;
+}
+
+/* Clears the floating navigation pill plus the Android gesture bar. From `md`
+   the pill moves to the top, so `--bottom-nav-h` is zero and only the inset and
+   a little breathing room remain. */
+@utility pb-shell {
+  padding-bottom: calc(var(--bottom-nav-h) + env(safe-area-inset-bottom, 0px) + 1.5rem);
+
+  @media (width >= 48rem) {
+    padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 2.5rem);
+  }
+}
+
+/* Mirror image: `--header-h` is zero on a handset (nothing floats at the top
+   there), so pages get the status-bar inset and a small pad instead. */
+@utility pt-shell {
+  padding-top: calc(var(--header-h) + env(safe-area-inset-top, 0px) + 0.5rem);
+}
+
+@utility mask-fade-r {
+  -webkit-mask-image: linear-gradient(90deg, #000 0, #000 90%, transparent 100%);
+  mask-image: linear-gradient(90deg, #000 0, #000 90%, transparent 100%);
+}
+
+@utility mask-fade-b {
+  -webkit-mask-image: linear-gradient(180deg, #000 0, #000 72%, transparent 100%);
+  mask-image: linear-gradient(180deg, #000 0, #000 72%, transparent 100%);
+}
+
+/* The watch screen's stage.
+   Constraining the *width* keeps the 16:9 player intact — it shrinks and centres
+   on a short viewport (landscape handset, small laptop) rather than being cropped
+   or pushing its controls off-screen. */
+@utility player-stage {
+  width: 100%;
+  margin-inline: auto;
+  max-width: calc((100svh - var(--player-chrome)) * 16 / 9);
+}

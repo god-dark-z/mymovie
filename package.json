@@ -1,0 +1,29 @@
+{
+  "name": "cineora",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Cineora — a cinematic, glassmorphic streaming discovery and playback experience.",
+  "scripts": {
+    "dev": "next dev -p 3000",
+    "build": "next build",
+    "start": "next start -p 3000",
+    "lint": "next lint",
+    "typecheck": "tsc --noEmit",
+    "icons": "node scripts/generate-icons.mjs"
+  },
+  "dependencies": {
+    "next": "15.5.25",
+    "react": "19.2.8",
+    "react-dom": "19.2.8",
+    "sharp": "0.35.4"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "4.3.3",
+    "@types/node": "24.10.1",
+    "@types/react": "19.2.7",
+    "@types/react-dom": "19.2.6",
+    "axe-core": "^4.11.2",
+    "tailwindcss": "4.3.3",
+    "typescript": "5.9.3"
+  }
+}

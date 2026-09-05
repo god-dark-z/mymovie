@@ -1,0 +1,16 @@
+node_modules
+.next
+out
+build
+.DS_Store
+*.pem
+npm-debug.log*
+.env*
+!.env.example
+next-env.d.ts
+tsconfig.tsbuildinfo
+_research
+_qa
+
+# Netlify CLI working directories (`netlify dev`, `netlify build`).
+.netlify

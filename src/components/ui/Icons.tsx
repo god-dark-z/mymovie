@@ -312,6 +312,141 @@ export function SpinnerIcon({ className, ...props }: IconProps) {
   );
 }
 
+/* Account and settings. Same grid and stroke as the rest, drawn here rather than
+   imported so the set keeps one hand. */
+
+export function UserIcon({ filled, ...props }: IconProps & { filled?: boolean }) {
+  return (
+    <Icon {...props}>
+      <circle cx="12" cy="8.25" r="3.75" fill={filled ? 'currentColor' : 'none'} />
+      <path d="M4.75 20.25a7.25 7.25 0 0 1 14.5 0" fill={filled ? 'currentColor' : 'none'} />
+    </Icon>
+  );
+}
+
+export function ShieldIcon(props: IconProps) {
+  return (
+    <Icon {...props}>
+      <path d="M12 3.5l7 2.5v5.6c0 4.2-2.8 7.4-7 8.9-4.2-1.5-7-4.7-7-8.9V6z" />
+      <path d="M9.25 12.1 11.4 14.2l3.6-4" />
+    </Icon>
+  );
+}
+
+export function BellIcon(props: IconProps) {
+  return (
+    <Icon {...props}>
+      <path d="M6.5 10.25a5.5 5.5 0 0 1 11 0c0 3 .6 4.6 1.5 5.75H5c.9-1.15 1.5-2.75 1.5-5.75z" />
+      <path d="M10 19a2 2 0 0 0 4 0" />
+    </Icon>
+  );
+}
+
+export function EyeIcon(props: IconProps) {
+  return (
+    <Icon {...props}>
+      <path d="M2.75 12S6.5 5.75 12 5.75 21.25 12 21.25 12 17.5 18.25 12 18.25 2.75 12 2.75 12z" />
+      <circle cx="12" cy="12" r="2.75" />
+    </Icon>
+  );
+}
+
+export function EyeOffIcon(props: IconProps) {
+  return (
+    <Icon {...props}>
+      <path d="M4 4.5 20 20.5" />
+      <path d="M9.6 6.3A9.6 9.6 0 0 1 12 6c5.5 0 9.25 6 9.25 6a17 17 0 0 1-3 3.7" />
+      <path d="M17.1 17.2A9.4 9.4 0 0 1 12 18.25C6.5 18.25 2.75 12 2.75 12a17.6 17.6 0 0 1 4-4.4" />
+      <path d="M10.1 10.2a2.75 2.75 0 0 0 3.8 3.8" />
+    </Icon>
+  );
+}
+
+export function KeyIcon(props: IconProps) {
+  return (
+    <Icon {...props}>
+      <circle cx="8.25" cy="8.25" r="4" />
+      <path d="M11.1 11.1 20 20" />
+      <path d="M16.5 16.5 18.5 14.5M14 14l2 2" />
+    </Icon>
+  );
+}
+
+export function MailIcon(props: IconProps) {
+  return (
+    <Icon {...props}>
+      <rect x="3.25" y="5.25" width="17.5" height="13.5" rx="2.5" />
+      <path d="m4.5 7.5 6.4 4.7a2 2 0 0 0 2.2 0l6.4-4.7" />
+    </Icon>
+  );
+}
+
+export function LogOutIcon(props: IconProps) {
+  return (
+    <Icon {...props}>
+      <path d="M14.5 4.75h3a2 2 0 0 1 2 2v10.5a2 2 0 0 1-2 2h-3" />
+      <path d="M10.5 8.25 6.75 12l3.75 3.75M6.75 12h8.25" />
+    </Icon>
+  );
+}
+
+export function DeviceIcon(props: IconProps) {
+  return (
+    <Icon {...props}>
+      <rect x="2.75" y="5" width="12.5" height="9.5" rx="1.75" />
+      <path d="M2 18.5h11" />
+      <rect x="17" y="9.5" width="4.5" height="9" rx="1.5" />
+    </Icon>
+  );
+}
+
+export function DownloadIcon(props: IconProps) {
+  return (
+    <Icon {...props}>
+      <path d="M12 3.75v10.5M8 10.5l4 4 4-4" />
+      <path d="M4.75 17.5v.75a2 2 0 0 0 2 2h10.5a2 2 0 0 0 2-2v-.75" />
+    </Icon>
+  );
+}
+
+export function PauseIcon(props: IconProps) {
+  return (
+    <Icon {...props}>
+      <path d="M9.25 5.5v13M14.75 5.5v13" />
+    </Icon>
+  );
+}
+
+export function PaletteIcon(props: IconProps) {
+  return (
+    <Icon {...props}>
+      <path d="M12 3.75a8.25 8.25 0 0 0 0 16.5c1.3 0 1.75-.8 1.75-1.6 0-1.5-1.2-1.7-1.2-2.9 0-1 .8-1.5 2-1.5h1.7a3.8 3.8 0 0 0 3.8-3.8c0-3.9-3.6-6.7-8.05-6.7z" />
+      <circle cx="8.5" cy="10" r="1" fill="currentColor" stroke="none" />
+      <circle cx="12" cy="7.75" r="1" fill="currentColor" stroke="none" />
+      <circle cx="15.75" cy="9.75" r="1" fill="currentColor" stroke="none" />
+    </Icon>
+  );
+}
+
+export function AccessibilityIcon(props: IconProps) {
+  return (
+    <Icon {...props}>
+      <circle cx="12" cy="5" r="1.6" />
+      <path d="M5.5 8.75c2 .8 4.2 1.2 6.5 1.2s4.5-.4 6.5-1.2" />
+      <path d="M12 9.95v4.3M9.25 20.25 12 14.25l2.75 6" />
+    </Icon>
+  );
+}
+
+export function ExportIcon(props: IconProps) {
+  return (
+    <Icon {...props}>
+      <path d="M12 20.25V9.75M8 13.25l4-4 4 4" />
+      <path d="M4.75 6.5V5.75a2 2 0 0 1 2-2h10.5a2 2 0 0 1 2 2v.75" />
+    </Icon>
+  );
+}
+
 
 
 

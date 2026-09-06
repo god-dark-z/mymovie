@@ -1,4 +1,5 @@
 import { asArray, asNumber, asRecord, asString, createStore } from '@/lib/storage/store';
+import { recordingAllowed } from '@/lib/storage/privacy';
 import type { MediaKind } from '@/types/media';
 
 /**
@@ -77,6 +78,9 @@ export const historyStore = createStore<WatchHistoryEntry[]>({
 
 /** Records an opened title, replacing any earlier entry for the same title. */
 export function recordWatch(entry: Omit<WatchHistoryEntry, 'openedAt'>): void {
+  // An account that has switched watch history off records nothing at all, rather
+  // than recording it and hiding the rail.
+  if (!recordingAllowed('watchHistory')) return;
   historyStore.update((current) => {
     const rest = current.filter((item) => item.id !== entry.id);
     return [{ ...entry, openedAt: Date.now() }, ...rest].slice(0, MAX_ENTRIES);

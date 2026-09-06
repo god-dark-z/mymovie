@@ -1,8 +1,10 @@
 import type { Metadata, Viewport } from 'next';
 import { Plus_Jakarta_Sans, Sora } from 'next/font/google';
+import { AuthProvider } from '@/components/account/AuthProvider';
 import { SearchProvider } from '@/components/search/SearchProvider';
 import { ToastProvider } from '@/components/ui/Toast';
 import { SITE } from '@/lib/site';
+import { DISPLAY_BOOT_SCRIPT } from '@/lib/storage';
 import '@/app/globals.css';
 
 /**
@@ -76,6 +78,13 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en" dir="ltr" className={`${display.variable} ${body.variable}`} suppressHydrationWarning>
       <body>
+        {/* Restores the signed-in reader's appearance and accessibility choices
+            before anything paints. The session is an HttpOnly cookie read after
+            mount, so without this a true-black theme would flash charcoal and
+            larger text would reflow the page a moment after it appeared. It only
+            replays what this device already saw; the account remains the source of
+            truth, and a failure here leaves the default look. */}
+        <script dangerouslySetInnerHTML={{ __html: DISPLAY_BOOT_SCRIPT }} />
         <a
           href="#main"
           className="sr-only focus-visible:not-sr-only focus-visible:fixed focus-visible:top-[calc(env(safe-area-inset-top,0px)+0.75rem)] focus-visible:left-1/2 focus-visible:z-100 focus-visible:-translate-x-1/2 focus-visible:rounded-full focus-visible:bg-ink-800 focus-visible:px-4 focus-visible:py-2.5 focus-visible:font-display focus-visible:text-sm focus-visible:text-white"
@@ -83,7 +92,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           Skip to content
         </a>
         <ToastProvider>
-          <SearchProvider>{children}</SearchProvider>
+          <AuthProvider>
+            <SearchProvider>{children}</SearchProvider>
+          </AuthProvider>
         </ToastProvider>
       </body>
     </html>

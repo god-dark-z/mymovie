@@ -32,3 +32,17 @@ export {
   DEFAULT_PLAYBACK_PREFERENCES,
   type PlaybackPreferencesState,
 } from '@/lib/storage/preferences';
+export { setRecordingGates, recordingAllowed, type RecordingGate } from '@/lib/storage/privacy';
+export {
+  syncDisplayFlags,
+  DEFAULT_DISPLAY_FLAGS,
+  DISPLAY_BOOT_SCRIPT,
+  type DisplayFlags,
+} from '@/lib/storage/display';
+export {
+  downloadsStore,
+  recordDownload,
+  forgetDownload,
+  clearDownloads,
+  type DownloadRecord,
+} from '@/lib/storage/downloads';

@@ -17,7 +17,9 @@ import type { MediaSummary } from '@/types/media';
 export const revalidate = 3600;
 
 export const metadata: Metadata = {
-  title: `${SITE.name} — ${SITE.tagline}`,
+  // `absolute` opts out of the root layout's `%s · Cineora` template, which would
+  // otherwise render "Cineora — Cinema, beautifully organised · Cineora".
+  title: { absolute: `${SITE.name} — ${SITE.tagline}` },
   description: SITE.description,
   alternates: { canonical: '/' },
 };

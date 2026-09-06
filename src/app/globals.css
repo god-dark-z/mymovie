@@ -1,5 +1,11 @@
 @import 'tailwindcss';
 
+/* A variant for the one accessibility switch that cannot be expressed as a token:
+   the two full-screen scrims paint with utilities rather than a glass class, and
+   a reader who asked for solid panels should not be looking through them either.
+   Everything else honours the preference through the glass tokens. */
+@custom-variant solid (&:where(html[data-reduce-transparency] *));
+
 /* ==========================================================================
    CINEORA — design tokens
    An original cinematic-luxury system: black glass, soft white, deep ruby.
@@ -44,6 +50,14 @@
   --color-silver-300: #cfd4de;
   --color-silver-500: #9aa2b1;
   --color-gold-400: #e8c66a;
+
+  /* ---- Jade: affirmative state only ------------------------------------ */
+  /* The palette is otherwise deliberately single-accent. The account area needs
+     one colour that means "verified / strong / secure" without borrowing ruby,
+     which reads as an alarm everywhere else in the product. */
+  --color-jade-300: #7fe0b0;
+  --color-jade-400: #34c98a;
+  --color-jade-500: #16a970;
 
   /* ---- Safe-area aware spacing tokens ---------------------------------- */
   /* Android WebView has no browser chrome, so insets are the only thing that
@@ -186,12 +200,30 @@
        what lifts it off the background. Levels 2 and 3 float over arbitrary
        artwork with no scrim guaranteed underneath, so they tint dark instead —
        a dark pane can stay far more transparent than a light one and still hold
-       white text. */
+       white text.
+
+       The dark side of every pane is one set of channels rather than a literal
+       per class, so the Midnight appearance can move all of them at once —
+       including the opaque fallbacks, which a per-class override would miss.
+
+       The values here are the no-blur ones. Transparency is granted further
+       down, once `backdrop-filter` has been confirmed to exist: a translucent
+       pane on an engine that cannot refract is just unreadable text. */
+    --glass-ink: 8 10 16;
     --glass-tint-1: rgb(255 255 255 / 0.05);
-    --glass-tint-2: rgb(10 12 19 / 0.5);
-    --glass-tint-3: rgb(9 11 18 / 0.6);
+    --glass-tint-2: rgb(var(--glass-ink) / 0.95);
+    --glass-tint-3: rgb(var(--glass-ink) / 0.98);
     --glass-line: rgb(255 255 255 / 0.09);
     --glass-line-strong: rgb(255 255 255 / 0.16);
+
+    /* The three surfaces that carry their own colour rather than a level tint:
+       level 1 is the resting white wash, `flat` lands directly on poster
+       artwork, `nav` is the floating pill. All tokens for the same reason the
+       tints are — one appearance or accessibility switch has to be able to move
+       every pane in the product. */
+    --glass-surface-1: rgb(255 255 255 / 0.055);
+    --glass-surface-flat: rgb(var(--glass-ink) / 0.58);
+    --glass-surface-nav: rgb(var(--glass-ink) / 0.97);
 
     /* Blur radius decides how much of the world behind the pane survives. It is
        kept deliberately small — real glass refracts, it does not frost, so the
@@ -206,6 +238,14 @@
        this little blur the colours behind are real, so it stays gentle. */
     --glass-sat: 135%;
 
+    /* The backdrop pass as a value rather than a declaration. A pane that must
+       stop refracting — an engine without `backdrop-filter`, a reader who asked
+       for less transparency — sets these to `none`, which drops the composited
+       layer entirely instead of blurring by zero and paying for it anyway. */
+    --glass-filter-2: none;
+    --glass-filter-3: none;
+    --glass-filter-nav: none;
+
     /* The specular pass. This is what actually reads as glass: a bright top
        edge falling off to nothing, plus a faint bounce along the bottom. It
        costs one gradient fill, which is why it can go on surfaces that repeat. */
@@ -216,6 +256,29 @@
       rgb(255 255 255 / 0) 64%,
       rgb(255 255 255 / 0.022) 100%
     );
+  }
+
+  /* Transparency, granted only where the engine can actually refract. Doing it
+     with tokens on one element rather than per class means a pane cannot end up
+     translucent in one rule and opaque in another. */
+  @supports (backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px)) {
+    :root {
+      --glass-tint-2: rgb(var(--glass-ink) / 0.5);
+      --glass-tint-3: rgb(var(--glass-ink) / 0.6);
+      /* Transparent enough that a poster passing underneath stays recognisable —
+         that see-through quality is the effect, not a side effect.
+
+         It cannot go much further than this. A translucent pane over arbitrary
+         artwork has no contrast guarantee: at 34% tint a white poster composites
+         to about #ababae, where a grey label is nearly invisible. 46% roughly
+         halves that washout while a short blur radius keeps the image behind
+         sharp, and the label shadows carry the rest. Anyone who needs a real
+         guarantee gets the opaque surface from the reduced-transparency rules. */
+      --glass-surface-nav: rgb(var(--glass-ink) / 0.46);
+      --glass-filter-2: blur(var(--glass-blur-2)) saturate(var(--glass-sat));
+      --glass-filter-3: blur(var(--glass-blur-3)) saturate(var(--glass-sat));
+      --glass-filter-nav: blur(var(--nav-blur)) saturate(150%);
+    }
   }
 
   @media (min-width: 48rem) {
@@ -428,34 +491,24 @@
       0 28px 70px -22px rgb(0 0 0 / 0.85);
   }
 
-  /* Blur only where the browser can actually do it, so an engine without
-     `backdrop-filter` gets a solid tint instead of an unreadable pane. */
-  @supports (backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px)) {
-    .glass-2 {
-      -webkit-backdrop-filter: blur(var(--glass-blur-2)) saturate(var(--glass-sat));
-      backdrop-filter: blur(var(--glass-blur-2)) saturate(var(--glass-sat));
-    }
-
-    .glass-3 {
-      -webkit-backdrop-filter: blur(var(--glass-blur-3)) saturate(var(--glass-sat));
-      backdrop-filter: blur(var(--glass-blur-3)) saturate(var(--glass-sat));
-    }
+  /* The backdrop pass. Both tokens are `none` until the `@supports` block above
+     grants them, so an engine that cannot refract never gets a translucent tint
+     it cannot make legible, and a reader who asked for solid panels drops the
+     composited layer rather than blurring by zero. */
+  .glass-2 {
+    -webkit-backdrop-filter: var(--glass-filter-2);
+    backdrop-filter: var(--glass-filter-2);
   }
 
-  @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
-    .glass-2 {
-      background-color: rgb(9 11 17 / 0.95);
-    }
-
-    .glass-3 {
-      background-color: rgb(5 6 10 / 0.97);
-    }
+  .glass-3 {
+    -webkit-backdrop-filter: var(--glass-filter-3);
+    backdrop-filter: var(--glass-filter-3);
   }
 
   /* Level 1 never blurs, so it carries a little more tint of its own to stay
      legible where it lands on artwork. */
   .glass-1 {
-    background-color: rgb(255 255 255 / 0.055);
+    background-color: var(--glass-surface-1);
   }
 
   /* One or two of these ride on every poster. A dark plate keeps white text
@@ -463,7 +516,7 @@
      glass level that trades some transparency for contrast, because it is the
      only one that lands directly on a bright image. */
   .glass-flat {
-    background-color: rgb(9 11 17 / 0.58);
+    background-color: var(--glass-surface-flat);
     border-color: var(--glass-line-strong);
     box-shadow:
       inset 0 1px 0 0 rgb(255 255 255 / 0.14),
@@ -477,8 +530,10 @@
      third of what a 1920px bar did. Nothing here transitions, either;
      animating `backdrop-filter` re-runs the blur every frame. */
   .glass-nav {
-    background-color: rgb(8 10 16 / 0.66);
+    background-color: var(--glass-surface-nav);
     border-color: var(--glass-line-strong);
+    -webkit-backdrop-filter: var(--glass-filter-nav);
+    backdrop-filter: var(--glass-filter-nav);
     box-shadow:
       inset 0 1px 0 0 rgb(255 255 255 / 0.18),
       inset 0 -1px 0 0 rgb(255 255 255 / 0.06),
@@ -500,30 +555,6 @@
 
   .glass-nav svg {
     filter: drop-shadow(0 1px 2px rgb(0 0 0 / 0.5));
-  }
-
-  @supports (backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px)) {
-    .glass-nav {
-      /* Transparent enough that a poster passing underneath stays recognisable —
-         that see-through quality is the effect, not a side effect.
-
-         It cannot go much further than this. A translucent pane over arbitrary
-         artwork has no contrast guarantee: at 34% tint a white poster
-         composites to about #ababae, where a grey label is nearly invisible.
-         46% roughly halves that washout while a short blur radius keeps the
-         image behind sharp, and the halo below carries the rest. Anyone who
-         needs a real guarantee gets the opaque bar in the media query further
-         down. */
-      background-color: rgb(8 10 16 / 0.46);
-      -webkit-backdrop-filter: blur(var(--nav-blur)) saturate(150%);
-      backdrop-filter: blur(var(--nav-blur)) saturate(150%);
-    }
-  }
-
-  @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
-    .glass-nav {
-      background-color: rgb(7 9 14 / 0.96);
-    }
   }
 
   /* The lit chip behind the current destination. Deliberately unblurred: it
@@ -550,29 +581,6 @@
     box-shadow:
       inset 0 1px 0 0 rgb(255 255 255 / 0.3),
       0 6px 18px -8px rgb(212 33 61 / 0.85);
-  }
-
-  /* Some platforms and users ask for less transparency — and a device that
-     reports it is usually one that would rather not composite blurs at all.
-     `prefers-contrast: more` joins it because that is the setting a reader
-     turns on when translucent chrome is not legible enough; both get an opaque
-     surface with a measurable contrast ratio instead of a composited guess. */
-  @media (prefers-reduced-transparency: reduce), (prefers-contrast: more) {
-    .glass-2,
-    .glass-3,
-    .glass-nav {
-      -webkit-backdrop-filter: none;
-      backdrop-filter: none;
-    }
-
-    .glass-2 {
-      background-color: rgb(9 11 17 / 0.96);
-    }
-
-    .glass-3,
-    .glass-nav {
-      background-color: rgb(6 8 13 / 0.97);
-    }
   }
 
   /* A hairline that fades toward the edges — reads as bevelled glass. */
@@ -753,4 +761,150 @@
   width: 100%;
   margin-inline: auto;
   max-width: calc((100svh - var(--player-chrome)) * 16 / 9);
+}
+
+/* ==========================================================================
+   Appearance and accessibility preferences
+
+   The account's display choices arrive as attributes on <html>: `AuthProvider`
+   writes them after the session resolves, and a boot script applies the set
+   remembered from the last visit before the first paint, so a reader who asked
+   for true black or larger text does not watch the page rearrange itself.
+
+   Everything below is what those attributes actually do. Each one is a promise
+   the Preferences screen makes in words — "removes the fades", "replaces the
+   frosted glass with solid panels" — so none of them can be decorative.
+
+   The platform's own settings are honoured beside them, with the same values,
+   so a reader whose device already asks for solid panels or less motion does not
+   have to ask Cineora separately.
+   ========================================================================== */
+
+@layer base {
+  /* ---- Midnight: true black, kinder to OLED ---------------------------- */
+  /* Only the substrate goes to pure black. The panel steps keep their
+     separation, or every card would dissolve into the page and the interface
+     would be a list of hairlines. */
+  html[data-appearance='midnight'] {
+    --color-ink-950: #000000;
+    --color-ink-900: #05060b;
+    --color-ink-850: #090b10;
+    --color-ink-800: #0e1017;
+    --color-ink-700: #16191f;
+    --glass-ink: 0 0 0;
+  }
+
+  /* The ambience layer is most of what reads as "charcoal" rather than black, so
+     it loses its blue lift and keeps a trace of the ruby glow. */
+  html[data-appearance='midnight'] body::before {
+    background:
+      radial-gradient(120% 80% at 50% -10%, rgb(212 33 61 / 0.1) 0%, transparent 55%),
+      #000000;
+  }
+
+  /* ---- Solid panels ---------------------------------------------------- */
+  /* Every pane reads its tint, its surface and its backdrop pass from a token,
+     so taking the glass away is a token swap rather than an override per class —
+     which is also why it cannot miss one. `none` on the filter drops the
+     composited layer entirely instead of blurring by zero and still paying for
+     the layer. */
+  html[data-reduce-transparency] {
+    --glass-tint-1: var(--color-ink-800);
+    --glass-tint-2: var(--color-ink-700);
+    --glass-tint-3: var(--color-ink-700);
+    --glass-surface-1: var(--color-ink-800);
+    /* The two surfaces that land on poster artwork stay dark, because opaque
+       here is about legibility, not about being lighter. */
+    --glass-surface-flat: rgb(var(--glass-ink));
+    --glass-surface-nav: rgb(var(--glass-ink));
+    --glass-filter-2: none;
+    --glass-filter-3: none;
+    --glass-filter-nav: none;
+    --glass-sheen: none;
+    /* With the specular top edge gone, the hairline is the only thing left
+       describing where a panel ends. */
+    --glass-line: rgb(255 255 255 / 0.15);
+    --glass-line-strong: rgb(255 255 255 / 0.24);
+  }
+
+  /* The same values from the platform setting. `prefers-contrast: more` joins it
+     because that is the setting a reader turns on when translucent chrome is not
+     legible enough, and a device reporting either is usually one that would
+     rather not composite blurs at all. */
+  @media (prefers-reduced-transparency: reduce), (prefers-contrast: more) {
+    :root {
+      --glass-tint-1: var(--color-ink-800);
+      --glass-tint-2: var(--color-ink-700);
+      --glass-tint-3: var(--color-ink-700);
+      --glass-surface-1: var(--color-ink-800);
+      --glass-surface-flat: rgb(var(--glass-ink));
+      --glass-surface-nav: rgb(var(--glass-ink));
+      --glass-filter-2: none;
+      --glass-filter-3: none;
+      --glass-filter-nav: none;
+      --glass-sheen: none;
+      --glass-line: rgb(255 255 255 / 0.15);
+      --glass-line-strong: rgb(255 255 255 / 0.24);
+    }
+  }
+
+  /* ---- Larger text ----------------------------------------------------- */
+  /* Type, spacing, the navigation pill's own height and the page gutters are all
+     sized in rem, so moving the root size scales the layout with the words
+     instead of cramming bigger text into the same boxes. Media-query
+     breakpoints resolve against the initial font size rather than this one,
+     which is what keeps a phone in the phone layout as the text grows. */
+  html[data-larger-text] {
+    font-size: 112.5%;
+  }
+
+  /* ---- Higher contrast ------------------------------------------------- */
+  /* Secondary text and hairlines only. mist-500 is the workhorse for dimmed
+     copy: it clears about 5:1 against the substrate by default and about 8:1
+     here. The accent stays where it is — brightening ruby would make an alarm
+     colour louder, not the interface clearer. */
+  html[data-high-contrast] {
+    --color-mist-300: #d7dbe5;
+    --color-mist-400: #b6bece;
+    --color-mist-500: #a3acbe;
+    --color-mist-600: #838d9f;
+    --glass-line: rgb(255 255 255 / 0.22);
+    --glass-line-strong: rgb(255 255 255 / 0.34);
+  }
+
+  /* ---- Reduced motion -------------------------------------------------- */
+  /* Mirrors the platform rule above. Durations collapse to a hair rather than
+     `animation: none`, because most of these animations carry `both` fill modes:
+     removing them outright would leave anything that fades in stuck at opacity
+     zero, which is a blank page rather than a still one. */
+  html[data-reduce-motion] {
+    scroll-behavior: auto;
+  }
+
+  html[data-reduce-motion] *,
+  html[data-reduce-motion] *::before,
+  html[data-reduce-motion] *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+@layer components {
+  /* The shimmer is the one animation that is purely decorative, so it goes
+     rather than being sped up. */
+  html[data-reduce-motion] .skeleton {
+    background-image: none;
+  }
+
+  /* Both edge treatments are hairlines by another name, so they follow the
+     contrast switch too. */
+  html[data-high-contrast] .hairline-top::before {
+    background: linear-gradient(90deg, transparent, rgb(255 255 255 / 0.45), transparent);
+  }
+
+  html[data-high-contrast] .divider {
+    background: linear-gradient(90deg, transparent, rgb(255 255 255 / 0.26), transparent);
+  }
 }

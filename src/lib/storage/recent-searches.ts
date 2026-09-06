@@ -1,4 +1,5 @@
 import { asArray, asString, createStore } from '@/lib/storage/store';
+import { recordingAllowed } from '@/lib/storage/privacy';
 
 /** Recent search queries, newest first. */
 const MAX_ENTRIES = 12;
@@ -18,6 +19,7 @@ export const recentSearchesStore = createStore<string[]>({
 });
 
 export function rememberSearch(query: string): void {
+  if (!recordingAllowed('searchHistory')) return;
   const clean = query.trim();
   if (clean.length < 2) return;
   recentSearchesStore.update((current) => {

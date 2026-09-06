@@ -45,13 +45,17 @@ export function Footer() {
                 <h2 className="font-display text-[0.6875rem] font-semibold tracking-[0.16em] text-mist-500 uppercase">
                   {column.title}
                 </h2>
-                {/* Full-height rows on touch: a 13px label is a 16px tap target otherwise. */}
+                {/*
+                  Full-height rows on touch: a 13px label is a 16px tap target
+                  otherwise. Desktop relaxes to 24px, the WCAG 2.2 minimum, rather
+                  than to the bare line box.
+                */}
                 <ul className="mt-1.5 flex flex-col md:mt-3.5 md:gap-2.5">
                   {column.links.map((link) => (
                     <li key={link.href} className="flex">
                       <Link
                         href={link.href}
-                        className="tap inline-flex min-h-11 items-center text-[0.8125rem] text-mist-400 transition-colors duration-200 md:min-h-0 md:hover:text-white"
+                        className="tap inline-flex min-h-11 items-center text-[0.8125rem] text-mist-400 transition-colors duration-200 md:min-h-6 md:hover:text-white"
                       >
                         {link.label}
                       </Link>

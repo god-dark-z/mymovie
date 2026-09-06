@@ -2,6 +2,8 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { useAuth } from '@/components/account/AuthProvider';
+import { Avatar } from '@/components/account/Avatar';
 import { CineoraMark } from '@/components/brand/Logo';
 import { useSearch } from '@/components/search/SearchProvider';
 import {
@@ -11,6 +13,7 @@ import {
   SearchIcon,
   SparkIcon,
   TvIcon,
+  UserIcon,
 } from '@/components/ui/Icons';
 import { cn } from '@/lib/utils/cn';
 
@@ -52,9 +55,16 @@ const CELL_REST = 'text-mist-300 md:hover:bg-white/8 md:hover:text-white';
 export function GlassNav() {
   const pathname = usePathname();
   const { open, isOpen } = useSearch();
+  const { configured, user, signedIn } = useAuth();
 
   const isActive = (href: string) => (href === '/' ? pathname === '/' : pathname.startsWith(href));
   const savedActive = isActive('/my-list');
+  const accountActive = isActive('/account') || isActive('/login') || isActive('/signup');
+
+  // On a deployment that cannot run accounts, this points at /account, which
+  // explains the situation, rather than at a sign-in form that cannot succeed.
+  // The label stays "Account" in both states so it does not change on hydration.
+  const accountHref = signedIn || !configured ? '/account' : '/login';
 
   return (
     <header
@@ -129,6 +139,33 @@ export function GlassNav() {
               <span className={cn(CELL_LABEL, 'md:sr-only')}>My List</span>
             </Link>
           </li>
+
+          {configured ? (
+            <li className="flex min-w-0 flex-1 md:flex-none">
+              <Link
+                href={accountHref}
+                aria-current={accountActive ? 'page' : undefined}
+                aria-label={signedIn ? `Account — ${user?.displayName ?? 'you'}` : 'Sign in to Cineora'}
+                className={cn(CELL, 'md:size-11', accountActive ? 'glass-pill text-white' : CELL_REST)}
+              >
+                {signedIn && user ? (
+                  <Avatar
+                    user={user}
+                    size="sm"
+                    className={cn(
+                      'size-[1.375rem] text-[0.5rem] md:size-[1.3125rem]',
+                      accountActive && 'ring-white/35',
+                    )}
+                  />
+                ) : (
+                  <UserIcon className={CELL_ICON} filled={accountActive} />
+                )}
+                <span aria-hidden className={cn(CELL_LABEL, 'md:sr-only')}>
+                  Account
+                </span>
+              </Link>
+            </li>
+          ) : null}
         </ul>
       </nav>
     </header>

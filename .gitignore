@@ -14,3 +14,8 @@ _qa
 
 # Netlify CLI working directories (`netlify dev`, `netlify build`).
 .netlify
+
+# Local account storage for the `fs` driver, and the development email outbox. Holds
+# password hashes, session records and verification tokens, so it must never be
+# committed. Relocate it with CINEORA_DATA_DIR.
+.data

@@ -169,14 +169,19 @@ export function SearchOverlay({ open, seed = '', onClose }: { open: boolean; see
   return createPortal(
     <div className="fixed inset-0 z-90 flex flex-col md:items-center md:justify-start md:pt-[12vh]">
       {/* The scrim's blur is `md`-only: on a handset the panel below covers the
-          whole viewport, so blurring the scrim there is work nobody ever sees. */}
+          whole viewport, so blurring the scrim there is work nobody ever sees.
+
+          `solid:` is the reduce-transparency path. Every other glass surface honours
+          that switch through the shared tokens, but these two paint with utilities,
+          so they opt in by hand. The important flag is what lets one accessibility
+          rule outrank the `md:` variants sitting beside it. */}
       <button
         type="button"
         tabIndex={-1}
         aria-hidden
         aria-label="Close search"
         onClick={close}
-        className="absolute inset-0 animate-fade-in cursor-default bg-ink-950/80 md:backdrop-blur-[3px]"
+        className="absolute inset-0 animate-fade-in cursor-default bg-ink-950/80 md:backdrop-blur-[3px] solid:bg-ink-950! solid:backdrop-blur-none!"
       />
 
       <div
@@ -191,6 +196,7 @@ export function SearchOverlay({ open, seed = '', onClose }: { open: boolean; see
           // floating pane, where the short radius lets the page stay readable
           // behind it instead of frosting it away.
           'relative flex h-app w-full flex-col bg-ink-950/88 backdrop-blur-sm',
+          'solid:bg-ink-950! solid:backdrop-blur-none!',
           'md:h-auto md:max-h-[72vh] md:w-[min(42rem,92vw)] md:animate-pop-in md:rounded-3xl',
           'md:border md:border-(--glass-line-strong) md:bg-ink-900/68 md:shadow-[0_40px_120px_-40px_rgba(0,0,0,0.95)]',
         )}

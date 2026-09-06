@@ -87,13 +87,15 @@ export function Sheet({
 
   return createPortal(
     <div className="fixed inset-0 z-90 flex items-end justify-center md:items-center" onKeyDown={onKeyDown}>
+      {/* The panel is `glass-3`, so it follows the reduce-transparency switch through
+          the shared tokens. This scrim paints with utilities, so it opts in itself. */}
       <button
         type="button"
         aria-label="Close"
         aria-hidden
         tabIndex={-1}
         onClick={onClose}
-        className="absolute inset-0 animate-fade-in cursor-default bg-ink-950/72 backdrop-blur-[3px]"
+        className="absolute inset-0 animate-fade-in cursor-default bg-ink-950/72 backdrop-blur-[3px] solid:bg-ink-950! solid:backdrop-blur-none!"
       />
 
       <div

@@ -1,14 +1,19 @@
 # Netlify deployment for Cineora.
 #
 # `@netlify/plugin-nextjs` is what makes an App Router build work here: it maps
-# server components, the two route handlers under /api and every ISR page onto
+# server components, every route handler under /api and every ISR page onto
 # Netlify Functions and the Netlify cache, and it points `next/image` at
 # Netlify's image CDN using the `remotePatterns` allowlist in next.config.ts.
 #
 # `publish` stays `.next` on purpose. This is a server build, not a static
 # export — pointing it at `out/` would deploy an empty site, and adding
-# `output: 'export'` to next.config.ts would break the search route handlers and
-# every dynamically rendered title page.
+# `output: 'export'` to next.config.ts would break the account endpoints, the
+# search route handlers and every dynamically rendered title page.
+#
+# Security headers and the Content-Security-Policy live in next.config.ts, not
+# here. One source of truth: two `Content-Security-Policy` headers from two files
+# are enforced as their intersection, so a drift between them would break the app
+# in a way that is genuinely hard to diagnose.
 
 [build]
   command = "npm run build"
@@ -17,9 +22,31 @@
 [build.environment]
   NODE_VERSION = "22"
   NEXT_TELEMETRY_DISABLED = "1"
-  # Metadata comes from a key-free public addon, so there is no API key to set.
-  # The only optional variable is CINEORA_CINEMETA_ORIGIN, and only if you run a
-  # mirror of the addon — see docs/INTEGRATIONS.md.
+
+# Nothing secret belongs in this file — it is committed. Set the values in
+# Site configuration → Environment variables, and see .env.example for what each
+# one does.
+#
+# Browsing, search and playback need no configuration at all: metadata comes from
+# a key-free public addon and playback from a documented embed.
+#
+# Accounts need, at minimum:
+#   SESSION_SECRET     32+ random characters. Rotating it signs everyone out.
+#   SMTP_HOST          Required in production, or nobody can verify an address.
+#   SMTP_USER          For Gmail, the account address.
+#   SMTP_PASSWORD      For Gmail, a 16-character App Password — never the account
+#                      password. Mark it "secret" in the Netlify UI.
+#
+# Storage defaults to Netlify Blobs on Netlify (CINEORA_DATA_DRIVER=blobs), which
+# needs no configuration beyond the site being linked. The store name is
+# CINEORA_BLOBS_STORE, default `cineora-accounts`.
+#
+# Downloads are off unless CINEORA_DOWNLOAD_CATALOG names files this deployment is
+# licensed to distribute — see docs/DOWNLOADS.md.
+#
+# Set NEXT_PUBLIC_SITE_URL to the production URL so canonical links, Open Graph
+# tags and the sitemap point at the real domain. Deploy Previews and branch
+# deploys read Netlify's own URL instead, so leave it unset for those contexts.
 
 [[plugins]]
   package = "@netlify/plugin-nextjs"

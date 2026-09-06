@@ -58,3 +58,53 @@ export function decodeProviderResponse<T>(hash: string | undefined): T | null {
     return null;
   }
 }
+
+/**
+ * Calls one of the provider's API endpoints, with origin fallback.
+ *
+ * Some hosts treat datacenter IPs differently from residential ones, so a call
+ * that works from a laptop can fail from a serverless function. Both of the
+ * provider's known origins expose the same API; trying the second one on
+ * failure costs one extra request and rescues exactly that case. Every call is
+ * time-boxed so a stalled connection can never hang a function until the
+ * platform kills it.
+ */
+export const PROVIDER_ORIGINS = ['https://nxsha.space', 'https://web.nxsha.app'] as const;
+
+export interface ProviderFetchResult {
+  ok: boolean;
+  /** The decoded body on success; null otherwise. */
+  body: unknown;
+  /** Status per origin tried, for surfacing in the 502 response. */
+  statuses: string[];
+}
+
+export async function providerFetch(
+  path: string,
+  query: string,
+  timeoutMs = 8_000,
+): Promise<ProviderFetchResult> {
+  const statuses: string[] = [];
+
+  for (const origin of PROVIDER_ORIGINS) {
+    try {
+      const response = await fetch(`${origin}${path}?q=${encodeURIComponent(query)}`, {
+        headers: { 'user-agent': 'Mozilla/5.0', referer: `${origin}/`, accept: 'application/json' },
+        cache: 'no-store',
+        signal: AbortSignal.timeout(timeoutMs),
+      });
+      statuses.push(`${new URL(origin).hostname}:${response.status}`);
+      if (!response.ok) continue;
+
+      const json = (await response.json().catch(() => null)) as { _hash?: string } | null;
+      const decoded = json?._hash ? decodeProviderResponse<Record<string, unknown>>(json._hash) : null;
+      if (decoded) return { ok: true, body: decoded, statuses };
+      statuses.push(`${new URL(origin).hostname}:undecodable`);
+    } catch (error) {
+      const reason = error instanceof Error && error.name === 'TimeoutError' ? 'timeout' : 'unreachable';
+      statuses.push(`${new URL(origin).hostname}:${reason}`);
+    }
+  }
+
+  return { ok: false, body: null, statuses };
+}

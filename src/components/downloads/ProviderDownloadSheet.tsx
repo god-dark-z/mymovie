@@ -195,6 +195,9 @@ export function ProviderDownloadSheet({
           {error ? (
             <p className="text-center text-xs font-medium text-ruby-300">That is not right. Try again.</p>
           ) : null}
+          {loadError ? (
+            <p className="text-center text-xs leading-relaxed text-ruby-300">{loadError}</p>
+          ) : null}
 
           <Button variant="accent" size="lg" className="w-full" onClick={verify} disabled={busy || value.trim() === ''}>
             {busy ? <SpinnerIcon className="size-4.5" /> : null}

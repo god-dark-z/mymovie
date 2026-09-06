@@ -1,7 +1,8 @@
 import { NextResponse } from 'next/server';
+import { enforce, RATE_LIMITS } from '@/server/auth/rate-limit';
 import { readSessionCookie } from '@/server/auth/cookies';
 import { sessions } from '@/server/data/sessions';
-import { encodeProviderQuery } from '@/server/downloads/provider-client';
+import { encodeProviderQuery, providerFetch } from '@/server/downloads/provider-client';
 
 /**
  * Proxy for the provider's server list.
@@ -25,18 +26,18 @@ export async function GET(request: Request) {
   if (!tmdbId) return NextResponse.json({ error: 'missing id' }, { status: 400 });
 
   const query = encodeProviderQuery({ type, tmdbId, method: 'dl' });
-  const upstream = await fetch(`https://nxsha.space/api/servers?q=${encodeURIComponent(query)}`, {
-    headers: { 'user-agent': 'Mozilla/5.0', referer: 'https://nxsha.space/' },
-    cache: 'no-store',
-  });
-  if (!upstream.ok) {
-    return NextResponse.json({ error: 'provider_unavailable' }, { status: 502 });
+  const result = await providerFetch('/api/servers', query);
+
+  if (!result.ok) {
+    // The per-origin statuses say whether the provider refused, timed out, or
+    // answered in a form we could not decode — the three fixes differ.
+    return NextResponse.json(
+      { error: 'provider_unavailable', detail: result.statuses },
+      { status: 502 },
+    );
   }
 
-  const { decodeProviderResponse } = await import('@/server/downloads/provider-client');
-  const body = (await upstream.json()) as { _hash?: string };
-  const decoded = decodeProviderResponse<{ servers?: unknown[] }>(body._hash);
-  const servers = Array.isArray(decoded?.servers) ? decoded!.servers : [];
-
+  const body = result.body as { servers?: unknown[] } | null;
+  const servers = Array.isArray(body?.servers) ? body!.servers : [];
   return NextResponse.json({ servers });
 }

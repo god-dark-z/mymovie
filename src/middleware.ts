@@ -75,6 +75,11 @@ export async function middleware(request: NextRequest) {
   const valid = raw ? await verifySession(raw) : false;
 
   if (!valid) {
+    // API routes answer in JSON — a redirect would be followed silently by fetch
+    // and surface as an HTML-parse error far from the cause.
+    if (pathname.startsWith('/api/')) {
+      return NextResponse.json({ error: 'unauthenticated' }, { status: 401 });
+    }
     const login = new URL('/login', request.url);
     login.searchParams.set('next', pathname + request.nextUrl.search);
     return NextResponse.redirect(login);

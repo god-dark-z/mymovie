@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import { enforce, RATE_LIMITS } from '@/server/auth/rate-limit';
 import { readSessionCookie } from '@/server/auth/cookies';
 import { sessions } from '@/server/data/sessions';
-import { encodeProviderQuery, decodeProviderResponse } from '@/server/downloads/provider-client';
+import { encodeProviderQuery, providerFetch } from '@/server/downloads/provider-client';
 
 /**
  * Proxy for the provider's download sources.
@@ -44,17 +44,16 @@ export async function GET(request: Request) {
     method: 'dl',
   });
 
-  const upstream = await fetch(`https://nxsha.space/api/sources?q=${encodeURIComponent(query)}`, {
-    headers: { 'user-agent': 'Mozilla/5.0', referer: 'https://nxsha.space/' },
-    cache: 'no-store',
-  });
-  if (!upstream.ok) {
-    return NextResponse.json({ error: 'provider_unavailable' }, { status: 502 });
+  const result = await providerFetch('/api/sources', query);
+
+  if (!result.ok) {
+    return NextResponse.json(
+      { error: 'provider_unavailable', detail: result.statuses },
+      { status: 502 },
+    );
   }
 
-  const body = (await upstream.json()) as { _hash?: string };
-  const decoded = decodeProviderResponse<{ sources?: unknown[]; error?: string }>(body._hash);
-  const sources = Array.isArray(decoded?.sources) ? decoded!.sources : [];
-
-  return NextResponse.json({ sources, error: decoded?.error ?? null });
+  const body = result.body as { sources?: unknown[]; error?: string } | null;
+  const sources = Array.isArray(body?.sources) ? body!.sources : [];
+  return NextResponse.json({ sources, error: body?.error ?? null });
 }

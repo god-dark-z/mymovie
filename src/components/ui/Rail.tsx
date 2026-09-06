@@ -86,8 +86,8 @@ export function Rail({
           {children}
         </div>
 
-        <RailArrow side="start" visible={edges.start} onClick={() => nudge(-1)} />
-        <RailArrow side="end" visible={edges.end} onClick={() => nudge(1)} />
+        <RailArrow side="start" visible={edges.start} onClick={() => nudge(-1)} title={`Scroll ${title ?? 'rail'} left`} />
+        <RailArrow side="end" visible={edges.end} onClick={() => nudge(1)} title={`Scroll ${title ?? 'rail'} right`} />
       </div>
     </section>
   );
@@ -97,20 +97,21 @@ function RailArrow({
   side,
   visible,
   onClick,
+  title,
 }: {
   side: 'start' | 'end';
   visible: boolean;
   onClick: () => void;
+  title: string;
 }) {
   return (
     <button
       type="button"
-      tabIndex={-1}
-      aria-hidden
       onClick={onClick}
+      aria-label={title}
       className={cn(
-        'glass-flat absolute top-1/2 z-10 hidden size-10 -translate-y-1/2 items-center justify-center rounded-full text-white transition duration-200 ease-glass md:flex',
-        'opacity-0 group-hover/rail:opacity-100 hover:bg-white/14',
+        'glass-flat tap absolute top-1/2 z-10 hidden size-10 -translate-y-1/2 items-center justify-center rounded-full text-white md:flex',
+        'opacity-0 group-hover/rail:opacity-100',
         side === 'start' ? 'left-2 lg:left-3' : 'right-2 lg:right-3',
         visible ? 'pointer-events-auto' : 'pointer-events-none !opacity-0',
       )}

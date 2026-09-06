@@ -224,7 +224,7 @@ export function SearchOverlay({ open, seed = '', onClose }: { open: boolean; see
             autoCorrect="off"
             spellCheck={false}
             aria-label="Search movies, series and anime"
-            className="h-12 min-w-0 flex-1 bg-transparent px-1 text-[0.9375rem] text-white outline-none placeholder:text-mist-500 md:h-12"
+            className="h-12 min-w-0 flex-1 bg-transparent px-1 text-[0.9375rem] text-white outline-none placeholder:text-mist-500 focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ruby-400/70 md:h-12"
           />
 
           {query ? (

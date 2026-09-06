@@ -41,14 +41,15 @@ export async function BrowseGrid({ hub, query }: { hub: HubConfig; query: Browse
 
   return (
     <div className="gutter-x">
-      <MediaGrid>
+      <MediaGrid stagger>
         {items.map((item, index) => (
-          <MediaCard
-            key={item.id}
-            media={item}
-            showKind={hub.id === 'anime'}
-            priority={query.page === 1 && index < 6}
-          />
+          <div key={item.id} style={{ '--stagger-index': index } as React.CSSProperties}>
+            <MediaCard
+              media={item}
+              showKind={hub.id === 'anime'}
+              priority={query.page === 1 && index < 6}
+            />
+          </div>
         ))}
       </MediaGrid>
 

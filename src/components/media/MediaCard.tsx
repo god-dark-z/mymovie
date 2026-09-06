@@ -20,12 +20,15 @@ export function MediaCard({
   media,
   priority,
   showKind = false,
+  progress,
   className,
 }: {
   media: MediaSummary;
   priority?: boolean;
   /** Show the MOVIE / TV / ANIME badge — used where types are mixed. */
   showKind?: boolean;
+  /** Watch progress as a 0–1 fraction. Shows a thin accent bar under the poster. */
+  progress?: number;
   className?: string;
 }) {
   const meta = joinNonEmpty([media.year ?? media.releaseInfo, media.genres[0]]);
@@ -38,7 +41,9 @@ export function MediaCard({
       <div
         className={cn(
           'relative aspect-2/3 w-full overflow-hidden rounded-2xl bg-ink-850',
-          'ring-1 ring-white/8 ring-inset transition duration-300 ease-glass',
+          // A faint resting shadow + hairline ring gives the grid depth before
+          // any interaction — cards read as physical objects, not a flat sheet.
+          'shadow-[0_8px_24px_-16px_rgba(0,0,0,0.7)] ring-1 ring-white/8 ring-inset transition duration-300 ease-glass',
           'group-focus-visible/card:ring-2 group-focus-visible/card:ring-ruby-400',
           'md:group-hover/card:-translate-y-1 md:group-hover/card:ring-white/18 md:group-hover/card:shadow-[0_22px_46px_-24px_rgba(0,0,0,0.95)]',
         )}
@@ -55,6 +60,23 @@ export function MediaCard({
           className="absolute inset-x-0 bottom-0 h-2/5 bg-linear-to-t from-ink-950/85 to-transparent opacity-0 transition-opacity duration-300 md:group-hover/card:opacity-100"
           aria-hidden
         />
+
+        {/* A thin progress bar under in-progress thumbnails — the strongest
+            signal that the app "knows" you. Only rendered when progress is set. */}
+        {progress != null ? (
+          <div
+            className="absolute inset-x-0 bottom-0 h-[3px] bg-white/15"
+            role="progressbar"
+            aria-valuenow={Math.round(progress * 100)}
+            aria-valuemin={0}
+            aria-valuemax={100}
+          >
+            <div
+              className="h-full bg-ruby-400"
+              style={{ width: `${Math.round(progress * 100)}%` }}
+            />
+          </div>
+        ) : null}
 
         {showKind ? (
           <div className="absolute top-2 left-2">
@@ -87,14 +109,18 @@ export function MediaCard({
 export function MediaGrid({
   children,
   className,
+  stagger = false,
 }: {
   children: React.ReactNode;
   className?: string;
+  /** Reveal children in sequence rather than all at once. */
+  stagger?: boolean;
 }) {
   return (
     <div
       className={cn(
         'grid grid-cols-3 gap-x-3 gap-y-6 sm:grid-cols-4 sm:gap-x-4 lg:grid-cols-6 xl:grid-cols-7 3xl:grid-cols-8',
+        stagger && 'stagger-children',
         className,
       )}
     >

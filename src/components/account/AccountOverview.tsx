@@ -9,6 +9,7 @@ import { Avatar } from '@/components/account/Avatar';
 import { VerifyEmailNotice } from '@/components/account/VerifyEmailNotice';
 import { Button } from '@/components/ui/Button';
 import { FormAlert } from '@/components/ui/Form';
+import { cn } from '@/lib/utils/cn';
 import {
   BellIcon,
   CheckIcon,
@@ -74,15 +75,19 @@ export function AccountOverview({ justReset }: { justReset: boolean }) {
 
       {user.emailVerified ? null : <VerifyEmailNotice email={user.email} />}
 
-      <AccountCard>
-        <div className="flex items-center gap-4">
-          <Avatar user={user} size="lg" />
+      {/* A premium hero card — the account dashboard's "cover" — with the
+          member's avatar, name, and a quick account-health summary. */}
+      <section className="glass-3 hairline-top relative overflow-hidden rounded-3xl px-5 py-5">
+        <div aria-hidden className="absolute -right-16 -top-16 size-48 rounded-full bg-ruby-500/18 blur-3xl" />
+        <div aria-hidden className="absolute -bottom-12 -left-10 size-40 rounded-full bg-gold-400/10 blur-3xl" />
+        <div className="relative flex items-center gap-4">
+          <Avatar user={user} size="xl" />
           <div className="min-w-0 flex-1">
-            <p className="truncate font-display text-base font-semibold text-white md:text-lg">
+            <p className="truncate font-display text-lg font-semibold text-white md:text-xl">
               {user.displayName}
             </p>
             <p className="mt-0.5 truncate text-[0.8125rem] text-mist-400">{user.email}</p>
-            <div className="mt-2 flex flex-wrap items-center gap-1.5">
+            <div className="mt-2.5 flex flex-wrap items-center gap-2">
               {user.emailVerified ? (
                 <span className="inline-flex items-center gap-1 rounded-full border border-jade-400/30 bg-jade-400/10 px-2 py-0.5 text-[0.6875rem] font-medium text-jade-300">
                   <CheckIcon className="size-3" />
@@ -93,19 +98,13 @@ export function AccountOverview({ justReset }: { justReset: boolean }) {
                   Unconfirmed email
                 </span>
               )}
-              {user.username ? (
-                <span className="rounded-full border border-(--glass-line) px-2 py-0.5 text-[0.6875rem] text-mist-400">
-                  @{user.username}
-                </span>
-              ) : null}
+              <span className="text-[0.6875rem] text-mist-500">
+                Member since {formatDay(user.createdAt, zone)}
+              </span>
             </div>
           </div>
         </div>
-
-        <p className="mt-4 border-t border-(--glass-line) pt-3.5 text-xs text-mist-500">
-          Member since {formatDay(user.createdAt, zone)}
-        </p>
-      </AccountCard>
+      </section>
 
       <div className="grid grid-cols-2 gap-3 md:gap-4">
         <Tile
@@ -113,6 +112,7 @@ export function AccountOverview({ justReset }: { justReset: boolean }) {
           icon={<UserIcon className="size-[1.125rem]" />}
           label="Profile"
           value={user.username ? `@${user.username}` : 'Add a handle'}
+          primary
         />
         <Tile
           href="/account/sessions"
@@ -213,18 +213,26 @@ function Tile({
   icon,
   label,
   value,
+  primary,
 }: {
   href: string;
   icon: React.ReactNode;
   label: string;
   value: string;
+  /** The primary tile uses glass-3 + accent tint for visual hierarchy. */
+  primary?: boolean;
 }) {
   return (
     <Link
       href={href}
-      className="glass-1 tap flex min-h-[5.5rem] flex-col justify-between rounded-3xl px-3.5 py-3.5 transition-colors duration-200 ease-glass md:hover:bg-white/8"
+      className={cn(
+        'tap flex min-h-[5.5rem] flex-col justify-between rounded-3xl px-3.5 py-3.5 transition-colors duration-200 ease-glass',
+        primary
+          ? 'glass-3 md:hover:bg-white/10'
+          : 'glass-2 md:hover:bg-white/8',
+      )}
     >
-      <span aria-hidden className="text-mist-400">
+      <span aria-hidden className={primary ? 'text-ruby-300' : 'text-mist-400'}>
         {icon}
       </span>
       <span>

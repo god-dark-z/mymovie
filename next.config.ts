@@ -140,6 +140,8 @@ const nextConfig: NextConfig = {
     imageSizes: [96, 128, 180, 240, 320, 420, 640],
     formats: ['image/webp'],
     minimumCacheTTL: 60 * 60 * 24 * 7,
+    loader: 'custom',
+    loaderFile: './src/lib/images/loader.ts',
   },
   experimental: {
     optimizePackageImports: [],

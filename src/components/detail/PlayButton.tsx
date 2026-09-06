@@ -33,7 +33,7 @@ export function PlayButton({
 
   if (kind === 'movie') {
     return (
-      <ButtonLink href={watchHref('movie', id)} variant="accent" size="lg" prefetch={false}>
+      <ButtonLink href={watchHref('movie', id)} variant="accent" size="lg" className="tap-glow" prefetch={false}>
         <PlayIcon className="size-[1.125rem]" />
         Play
       </ButtonLink>
@@ -48,7 +48,7 @@ export function PlayButton({
   const target = resume ?? start;
 
   return (
-    <ButtonLink href={watchHref(kind, id, target)} variant="accent" size="lg" prefetch={false}>
+    <ButtonLink href={watchHref(kind, id, target)} variant="accent" size="lg" className="tap-glow" prefetch={false}>
       <PlayIcon className="size-[1.125rem]" />
       {resume ? 'Resume' : 'Play'}
       {target ? (

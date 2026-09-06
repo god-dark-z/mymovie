@@ -6,6 +6,7 @@ import { PlayButton } from '@/components/detail/PlayButton';
 import { RelatedRail } from '@/components/detail/RelatedRail';
 import { WatchlistButton } from '@/components/detail/WatchlistButton';
 import { DownloadButton } from '@/components/downloads/DownloadButton';
+import { ProviderDownloadButton } from '@/components/downloads/ProviderDownloadButton';
 import { JsonLd } from '@/components/seo/JsonLd';
 import { InlineNotice } from '@/components/ui/ErrorState';
 import { RailSkeleton } from '@/components/ui/Skeleton';
@@ -39,9 +40,13 @@ export function TitlePage({
   const awaitingEpisodes = episodic && detail.episodes.length > 0 && start === undefined;
 
   // Resolved on the server, from the operator's own catalogue. Almost always null:
-  // Cineora holds no rights to what the metadata and playback providers serve, so a
-  // Download button appears only where the deployment has declared its own files.
+  // Cineora holds no rights to what the metadata and playback providers serve, so an
+  // operator-catalogue Download button appears only where the deployment has declared its
+  // own files. When there is none, we offer provider downloads resolved through Cineora's
+  // own proxy API (gated behind a captcha) so the backend stays hidden.
   const offer = offerFor(detail.id);
+  const providerTmdbId = detail.ids.tmdbId;
+  const hasProviderDownload = Boolean(providerTmdbId);
 
   return (
     <div className="animate-fade-in pb-shell">
@@ -55,6 +60,13 @@ export function TitlePage({
             ) : null}
             <WatchlistButton media={detail} />
             {offer ? <DownloadButton offer={offer} /> : null}
+            {!offer && hasProviderDownload && providerTmdbId ? (
+              <ProviderDownloadButton
+                title={detail.title}
+                tmdbId={providerTmdbId}
+                kind={detail.kind}
+              />
+            ) : null}
             {!playable ? (
               <InlineNotice tone="warning" className="mt-1 basis-full">
                 This title has no IMDb or TMDb identifier in the catalogue, so no playback source can

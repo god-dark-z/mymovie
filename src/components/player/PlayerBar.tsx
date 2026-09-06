@@ -29,7 +29,12 @@ export function PlayerBar({ children, className }: { children: ReactNode; classN
 }
 
 const CONTROL =
-  'glass-1 tap flex h-14 shrink-0 items-center gap-2.5 rounded-2xl px-3.5 text-left outline-offset-2 md:h-13 md:hover:border-(--glass-line-strong) md:hover:bg-white/9';
+  'glass-1 tap relative flex h-14 shrink-0 items-center gap-2.5 rounded-2xl px-3.5 text-left outline-offset-2 md:h-13 md:hover:border-(--glass-line-strong) md:hover:bg-white/9';
+
+/* A ruby glow ring + tint marks the engaged control so the bar shows state at a
+   glance instead of every pill looking identical. */
+const CONTROL_ACTIVE =
+  'ring-2 ring-ruby-400/70 bg-ruby-500/8 md:ring-ruby-400/70';
 
 function Face({ icon, label, value }: { icon: ReactNode; label: string; value: string }) {
   return (
@@ -54,12 +59,15 @@ export function ControlButton({
   label,
   value,
   onClick,
+  active,
   className,
 }: {
   icon: ReactNode;
   label: string;
   value: string;
   onClick: () => void;
+  /** Marks the control as the engaged option with an accent ring + tint. */
+  active?: boolean;
   className?: string;
 }) {
   return (
@@ -67,7 +75,7 @@ export function ControlButton({
       type="button"
       onClick={onClick}
       aria-label={`${label}: ${value}. Change`}
-      className={cn(CONTROL, className)}
+      className={cn(CONTROL, active && CONTROL_ACTIVE, className)}
     >
       <Face icon={icon} label={label} value={value} />
     </button>

@@ -112,6 +112,26 @@ time limit, and a long transfer through it will be cut off.
 and pair it with an expiring signed URL from your storage provider — that URL becomes
 visible to the client, which is the cost of not passing the bytes through a function.
 
+### A catalogue you can paste today
+
+To see the whole flow working before you have files of your own, Blender's *Sintel*
+trailer is genuinely redistributable — it is a Creative Commons BY 3.0 open-movie
+asset that Blender hosts for exactly this kind of use. Paste this value into
+`CINEORA_DOWNLOAD_CATALOG` (Netlify: **Site configuration → Environment variables**),
+then run **Deploys → Trigger deploy → Clear cache and deploy site**:
+
+```json
+[{"titleId":"tt1727587","kind":"movie","title":"Sintel (Blender Open Movie)","licence":"Blender Foundation — Sintel trailer, CC BY 3.0. Redistribution permitted with attribution.","files":[{"quality":"480p","sizeBytes":4372373,"contentType":"video/mp4","url":"https://download.blender.org/durian/trailer/sintel_trailer-480p.mp4","delivery":"proxy"}]}]
+```
+
+After the redeploy, the Sintel title page shows a Download button, `/downloads` lists
+the title, and a signed-in reader gets the file through a 15-minute grant. The
+`titleId` is simply the IMDb id in the title's own address, `/movie/tt1727587` here —
+that is how the button finds its files.
+
+This entry is a demonstration, not a library: swap it for files you actually hold
+rights to before launch.
+
 ### When something is wrong
 
 Invalid entries are dropped and counted on the server console. The messages never

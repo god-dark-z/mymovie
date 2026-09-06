@@ -79,6 +79,9 @@ export function ServerSheet({
               subtitle={failed ? 'Did not respond earlier in this session' : server.note}
               badge={
                 <>
+                  {server.id === AUTO_SERVER_ID ? (
+                    <Badge tone="positive">Recommended</Badge>
+                  ) : null}
                   {server.multiLanguage && server.id !== AUTO_SERVER_ID ? (
                     <Badge>Multi-lang</Badge>
                   ) : null}

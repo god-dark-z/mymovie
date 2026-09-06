@@ -28,7 +28,7 @@ import { useMounted } from '@/hooks/useMounted';
 import { useNetworkStatus } from '@/hooks/useNetworkStatus';
 import { usePlaybackPreferences } from '@/hooks/usePlaybackPreferences';
 import { detailHref, kindLabel } from '@/lib/metadata/classify';
-import { backdropUrl } from '@/lib/metadata/images';
+import { backdropUrl, posterUrl } from '@/lib/metadata/images';
 import { ANIME_PRIORITY_LANGUAGES, languageLabel } from '@/lib/nxsha/languages';
 import { getServerConfig, nextServerAfter, type PlaybackServerConfig } from '@/lib/nxsha/servers';
 import { isAddressable, toPlaybackTarget } from '@/lib/playback/availability';
@@ -310,12 +310,28 @@ export function WatchScreen({
           <ArrowLeftIcon className="size-5" />
         </Link>
 
+        {/* A small poster thumbnail — the title's identity object stays with the
+            viewer through the whole playback. */}
+        <div className="hidden size-10 shrink-0 overflow-hidden rounded-lg bg-ink-800 shadow-md sm:block">
+          <PosterImage
+            src={posterUrl(detail.poster, 'small')}
+            alt=""
+            sizes="40px"
+            className="size-full"
+          />
+        </div>
+
         <div className="min-w-0 flex-1">
-          <h1 className="truncate font-display text-[0.9375rem] font-semibold tracking-[-0.01em] text-white md:text-base">
-            <Link href={backHref} className="hover:underline">
-              {detail.title}
-            </Link>
-          </h1>
+          <div className="flex items-center gap-2">
+            <span className="brand-tile animate-glow-pulse shrink-0 rounded-full px-2 py-0.5 text-[0.625rem] font-bold tracking-wider text-white uppercase">
+              Now Playing
+            </span>
+            <h1 className="truncate font-display text-[0.9375rem] font-semibold tracking-[-0.01em] text-white md:text-base">
+              <Link href={backHref} className="hover:underline">
+                {detail.title}
+              </Link>
+            </h1>
+          </div>
           {subline ? <p className="truncate text-xs text-mist-500">{subline}</p> : null}
         </div>
 
@@ -325,6 +341,11 @@ export function WatchScreen({
       {/* The black band lets the 16:9 stage letterbox on a wide or short viewport
           instead of being cropped or pushing the controls off-screen. */}
       <div className="bg-black">
+        {/* A soft ambient glow sits behind the stage so the player reads as "a
+            screen in a dark room" rather than a box on a page. */}
+        <div aria-hidden className="absolute -inset-x-6 -top-6 -bottom-6 -z-10">
+          <div className="absolute inset-0 bg-ruby-500/8 blur-3xl" />
+        </div>
         <div className="player-stage">{stage}</div>
       </div>
 
@@ -335,18 +356,21 @@ export function WatchScreen({
             label="Server"
             value={serverConfig.label}
             onClick={() => setSheet('server')}
+            active={sheet === 'server'}
           />
           <ControlButton
             icon={<GlobeIcon className="size-4.5" />}
             label="Audio"
             value={languageLabel(preferences.language) ?? 'Player default'}
             onClick={() => setSheet('audio')}
+            active={sheet === 'audio'}
           />
           <ControlButton
             icon={<CaptionsIcon className="size-4.5" />}
             label="Subtitles"
             value={languageLabel(preferences.subtitle) ?? 'Player default'}
             onClick={() => setSheet('subtitle')}
+            active={sheet === 'subtitle'}
           />
           {episodic ? (
             <ControlButton

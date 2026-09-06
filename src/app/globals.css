@@ -18,6 +18,25 @@
     var(--font-jakarta), ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
   --font-display: var(--font-sora), var(--font-jakarta), ui-sans-serif, system-ui, sans-serif;
 
+  /* A deliberate size/leading/tracking scale so headings feel intentional
+     rather than assembled one at a time. Line-heights tighten as size grows,
+     tracking tightens on the largest sizes — the way a cinema poster reads. */
+  --text-display: 2.75rem;
+  --text-display--line-height: 1.02;
+  --text-display--letter-spacing: -0.02em;
+  --text-heading: 1.75rem;
+  --text-heading--line-height: 1.08;
+  --text-heading--letter-spacing: -0.015em;
+  --text-subheading: 1.125rem;
+  --text-subheading--line-height: 1.18;
+  --text-subheading--letter-spacing: -0.005em;
+  --text-body: 0.9375rem;
+  --text-body--line-height: 1.55;
+  --text-body--letter-spacing: 0em;
+  --text-caption: 0.75rem;
+  --text-caption--line-height: 1.4;
+  --text-caption--letter-spacing: 0.01em;
+
   /* ---- Ink: the black-glass substrate ---------------------------------- */
   --color-ink-950: #05060a;
   --color-ink-900: #090b11;
@@ -91,9 +110,13 @@
   --animate-rise: rise 0.5s var(--ease-soft) both;
   --animate-shimmer: shimmer 1.7s linear infinite;
   --animate-drift: drift 30s ease-in-out infinite alternate;
+  --animate-drift-slow: drift 48s ease-in-out infinite alternate;
   --animate-halo: halo 7s ease-in-out infinite;
   --animate-sheet-in: sheet-in 0.32s var(--ease-glass) both;
   --animate-pop-in: pop-in 0.24s var(--ease-glass) both;
+  --animate-player-in: player-in 0.6s var(--ease-soft) both;
+  --animate-stagger: stagger 0.5s var(--ease-soft) both;
+  --animate-glow-pulse: glow-pulse 2.4s ease-in-out infinite;
   --animate-ring: ring 1.05s linear infinite;
 
   @keyframes fade-in {
@@ -169,6 +192,42 @@
   @keyframes ring {
     to {
       transform: rotate(360deg);
+    }
+  }
+
+  /* A slower, subtler drift for the detail hero — breathes without pulling focus
+     from the title. */
+  @keyframes player-in {
+    from {
+      opacity: 0;
+      transform: scale(0.985);
+    }
+    to {
+      opacity: 1;
+      transform: scale(1);
+    }
+  }
+
+  /* Staggered entrance for grid/rail children. */
+  @keyframes stagger {
+    from {
+      opacity: 0;
+      transform: translate3d(0, 10px, 0);
+    }
+    to {
+      opacity: 1;
+      transform: translate3d(0, 0, 0);
+    }
+  }
+
+  /* A soft breathing glow for the "NOW PLAYING" pill. */
+  @keyframes glow-pulse {
+    0%,
+    100% {
+      opacity: 0.65;
+    }
+    50% {
+      opacity: 1;
     }
   }
 }
@@ -624,13 +683,34 @@
       transform 0.16s var(--ease-glass),
       background-color 0.2s var(--ease-glass),
       border-color 0.2s var(--ease-glass),
-      opacity 0.2s var(--ease-glass);
+      opacity 0.2s var(--ease-glass),
+      box-shadow 0.2s var(--ease-glass);
     -webkit-user-select: none;
     user-select: none;
   }
 
   .tap:active {
     transform: scale(0.97);
+  }
+
+  /* A subtle press glow — a soft accent bloom on press that reads as "alive"
+     without relying on hover. Touch-first friendly. */
+  .tap-glow:active {
+    box-shadow:
+      0 0 0 1px rgb(244 80 106 / 0.35),
+      0 0 18px -2px rgb(244 80 106 / 0.4);
+  }
+
+  /* Glass hover that shifts the tint brightness rather than painting a flat wash. */
+  .glass-hover {
+    transition:
+      background-color 0.25s var(--ease-glass),
+      border-color 0.25s var(--ease-glass),
+      filter 0.25s var(--ease-glass);
+  }
+
+  .glass-hover:hover {
+    filter: brightness(1.18) saturate(1.05);
   }
 
   /* Horizontal rail: snap on touch, momentum on desktop, no visible bar. */
@@ -906,5 +986,36 @@
 
   html[data-high-contrast] .divider {
     background: linear-gradient(90deg, transparent, rgb(255 255 255 / 0.26), transparent);
+  }
+}
+
+/* Windows High Contrast Mode — reinforces borders and removes decorative
+   shadows that WHCM strips, so interactive elements stay visible. */
+@media (forced-colors: active) {
+  .glass-1,
+  .glass-2,
+  .glass-3,
+  .glass-flat,
+  .glass-nav,
+  .glass-pill {
+    border-color: CanvasText;
+  }
+
+  .hairline-top::before,
+  .divider {
+    background: CanvasText;
+  }
+
+  .tap:active {
+    outline: 2px solid Highlight;
+  }
+}
+
+/* Staggered grid entrance — applied by MediaGrid/Rail so cards reveal in sequence
+   instead of popping in as a block. Fully reduced-motion safe. */
+@utility stagger-children {
+  & > * {
+    animation: var(--animate-stagger);
+    animation-delay: calc(var(--stagger-index, 0) * 50ms);
   }
 }

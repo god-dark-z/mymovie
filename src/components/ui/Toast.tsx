@@ -73,6 +73,7 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
             key={item.id}
             type="button"
             onClick={() => dismiss(item.id)}
+            aria-label={`Dismiss: ${item.message}`}
             className={cn(
               'glass-3 pointer-events-auto flex max-w-[min(26rem,92vw)] animate-rise items-center gap-2.5 rounded-full py-2.5 pr-4 pl-3.5 text-left text-[0.8125rem] font-medium text-white',
               'shadow-[0_16px_40px_-20px_rgba(0,0,0,0.9)]',

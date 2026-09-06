@@ -28,13 +28,17 @@ export function DetailHero({ detail, actions }: { detail: MediaDetail; actions: 
   return (
     <header className="relative">
       <div className="relative aspect-16/10 max-h-[58svh] w-full overflow-hidden sm:aspect-16/9 md:max-h-[76svh]">
-        <PosterImage
-          src={backdropUrl(detail.backdrop)}
-          alt={detail.title}
-          sizes="100vw"
-          priority
-          wide
-        />
+        {/* The backdrop breathes with a slow Ken Burns drift — the home hero
+            does the same, so the detail page feels alive rather than static. */}
+        <div className="absolute inset-0 animate-drift-slow">
+          <PosterImage
+            src={backdropUrl(detail.backdrop)}
+            alt={detail.title}
+            sizes="100vw"
+            priority
+            wide
+          />
+        </div>
         {/* Two scrims: one lifts the copy off the artwork, one keeps the top
             translucent bar legible. */}
         <div
@@ -50,6 +54,9 @@ export function DetailHero({ detail, actions }: { detail: MediaDetail; actions: 
       <div className="gutter-x relative -mt-24 md:-mt-40 lg:-mt-48">
         <div className="flex flex-col gap-6 md:flex-row md:items-end md:gap-9">
           <div className="hidden w-48 shrink-0 md:block lg:w-56">
+            {/* A soft ambient glow sits behind the poster so it reads as a
+                physical object lit in a dark room, not a flat image. */}
+            <div aria-hidden className="absolute -inset-3 rounded-3xl bg-ruby-500/20 blur-2xl" />
             <div className="relative aspect-2/3 w-full overflow-hidden rounded-2xl bg-ink-850 ring-1 ring-white/10 ring-inset shadow-[0_30px_60px_-30px_rgba(0,0,0,0.95)]">
               <PosterImage
                 src={posterUrl(detail.poster, 'medium')}

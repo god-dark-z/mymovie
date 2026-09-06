@@ -97,7 +97,12 @@ export function NxshaPlayer({
         allowFullScreen
         referrerPolicy="origin-when-cross-origin"
         onLoad={() => enter('loaded')}
-        className="absolute inset-0 size-full border-0"
+        className={cn(
+          'absolute inset-0 size-full border-0',
+          // A subtle scale-in when the embed loads — the stage "breathes" to life
+          // rather than the iframe popping in raw.
+          phase === 'loaded' ? 'animate-player-in' : '',
+        )}
       />
 
       {phase === 'loading' ? (

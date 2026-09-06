@@ -12,7 +12,7 @@ export function Badge({
 }: {
   children: ReactNode;
   className?: string;
-  tone?: 'glass' | 'accent' | 'solid';
+  tone?: 'glass' | 'accent' | 'solid' | 'positive';
 }) {
   return (
     <span
@@ -20,6 +20,7 @@ export function Badge({
         'inline-flex items-center gap-1 rounded-full px-2 py-[0.1875rem] text-[0.625rem] font-semibold tracking-[0.11em] uppercase',
         tone === 'glass' && 'glass-flat text-mist-100',
         tone === 'accent' && 'border border-ruby-400/35 bg-ruby-500/18 text-ruby-200',
+        tone === 'positive' && 'border border-jade-400/35 bg-jade-500/18 text-jade-200',
         tone === 'solid' && 'bg-ink-950/75 text-mist-100',
         className,
       )}

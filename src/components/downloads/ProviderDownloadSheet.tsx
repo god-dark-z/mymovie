@@ -6,40 +6,24 @@ import { SpinnerIcon } from '@/components/ui/Icons';
 import { Sheet } from '@/components/ui/Sheet';
 import { cn } from '@/lib/utils/cn';
 
-/**
- * A lightweight proof-of-work gate, modeled on the provider's own pre-download
- * check. It stops casual hotlinking and automated scraping without bothering a
- * person who actually wants the file.
- */
-
 function generateChallenge(): { a: number; b: number; answer: number } {
   const a = Math.floor(Math.random() * 40) + 5;
   const b = Math.floor(Math.random() * 40) + 5;
   return { a, b, answer: a + b };
 }
 
-/** One provider download source, as returned by Cineora's own proxy API. */
 export interface ProviderSource {
   url: string;
   quality?: string;
   label?: string;
   type?: string;
-  /** Embed links are player pages, not files — filtered out before display. */
   isEmbed?: boolean;
 }
 
-/**
- * The third-party download picker — a single sheet with three steps.
- *
- * Step 1: a math gate (rate-limits the resolver). Step 2: pick a provider server.
- * Step 3: the download links, fetched through Cineora's own proxy API — the
- * provider's origin and endpoints never appear in the browser's network log.
- */
 export interface ProviderDownloadSheetProps {
   open: boolean;
   onClose: () => void;
   title: string;
-  /** The title's TMDb id — what the resolver routes on. */
   tmdbId: string;
   kind: 'movie' | 'tv' | 'anime';
   season?: number;
@@ -47,6 +31,22 @@ export interface ProviderDownloadSheetProps {
 }
 
 type Step = 'captcha' | 'servers' | 'sources';
+
+async function postResolve(body: Record<string, string>) {
+  const res = await fetch('/api/downloads/resolve', {
+    method: 'POST',
+    headers: { 'content-type': 'application/json' },
+    body: JSON.stringify(body),
+  });
+  if (!res.ok) {
+    const detail = await res.json().catch(() => null);
+    throw new Error(
+      (detail && typeof detail === 'object' && 'error' in detail ? String(detail.error) : null) ||
+        `request_failed_${res.status}`,
+    );
+  }
+  return res.json();
+}
 
 export function ProviderDownloadSheet({
   open,
@@ -61,7 +61,7 @@ export function ProviderDownloadSheet({
   const [challenge, setChallenge] = useState(() => generateChallenge());
   const [value, setValue] = useState('');
   const [error, setError] = useState(false);
-  const [servers, setServers] = useState<Array<{ id: number | string; name: string; quality?: string; scraper?: string }>>([]);
+  const [servers, setServers] = useState<Array<Record<string, unknown>>>([]);
   const [sources, setSources] = useState<ProviderSource[]>([]);
   const [busy, setBusy] = useState(false);
   const [loadError, setLoadError] = useState('');
@@ -98,10 +98,15 @@ export function ProviderDownloadSheet({
     setBusy(true);
     setLoadError('');
     try {
-      const res = await fetch(`/api/downloads/servers?type=${kind === 'movie' ? 'movie' : 'tv'}&id=${encodeURIComponent(tmdbId)}`);
-      if (!res.ok) throw new Error('unavailable');
-      const body = (await res.json()) as { servers?: Array<{ id: number | string; name: string; quality?: string; scraper?: string; dl_support?: boolean }> };
-      const list = (body.servers ?? []).filter((s) => s.dl_support !== false);
+      const result = (await postResolve({
+        type: kind === 'movie' ? 'movie' : 'tv',
+        id: tmdbId,
+      })) as { items?: unknown[] };
+
+      const list = (Array.isArray(result.items) ? result.items : [])
+        .filter((s): s is Record<string, unknown> => typeof s === 'object' && s !== null)
+        .filter((s) => s.dl_support !== false);
+
       setServers(list);
       setStep('servers');
       if (list.length === 0) setLoadError('No download servers are available for this title right now.');
@@ -112,25 +117,35 @@ export function ProviderDownloadSheet({
     }
   }
 
-  async function pickServer(server: { scraper?: string }) {
-    const provider = server.scraper;
+  async function pickServer(server: Record<string, unknown>) {
+    const provider = server.scraper as string | undefined;
     if (!provider) return;
     setBusy(true);
     setLoadError('');
     try {
-      const params = new URLSearchParams({
+      const body: Record<string, string> = {
         type: kind === 'movie' ? 'movie' : 'tv',
         id: tmdbId,
         provider,
-      });
+      };
       if (isEpisode) {
-        params.set('season', String(season ?? 1));
-        params.set('episode', String(episode ?? 1));
+        body.season = String(season ?? 1);
+        body.episode = String(episode ?? 1);
       }
-      const res = await fetch(`/api/downloads/sources?${params.toString()}`);
-      if (!res.ok) throw new Error('unavailable');
-      const body = (await res.json()) as { sources?: ProviderSource[] };
-      const list = (body.sources ?? []).filter((s) => s.url && !s.isEmbed);
+      const result = (await postResolve(body)) as { items?: unknown[] };
+
+      const list = (Array.isArray(result.items) ? result.items : [])
+        .filter((s): s is Record<string, unknown> => typeof s === 'object' && s !== null)
+        .filter((s) => Boolean(s.url) && s.isEmbed !== true)
+        .map(
+          (s): ProviderSource => ({
+            url: String(s.url),
+            quality: typeof s.quality === 'string' ? s.quality : undefined,
+            label: typeof s.label === 'string' ? s.label : undefined,
+            type: typeof s.type === 'string' ? s.type : undefined,
+          }),
+        );
+
       setSources(list);
       setStep('sources');
       if (list.length === 0) setLoadError('This server has no downloadable files for this title.');
@@ -213,30 +228,31 @@ export function ProviderDownloadSheet({
       {step === 'servers' ? (
         <div className="space-y-2">
           {loadError ? <p className="text-sm text-mist-400">{loadError}</p> : null}
-          {servers.map((server) => (
-            <button
-              key={String(server.id)}
-              type="button"
-              onClick={() => void pickServer(server)}
-              disabled={busy}
-              className={cn(
-                'tap flex min-h-12 w-full items-center gap-3 rounded-2xl border border-(--glass-line) bg-white/4 px-4 text-left text-[0.8125rem] font-medium text-mist-100 md:hover:bg-white/8',
-              )}
-            >
-              <span className="min-w-0 flex-1 truncate">{server.name}</span>
-              {server.quality ? (
-                <span className="shrink-0 text-[0.6875rem] text-mist-500">{server.quality}</span>
-              ) : null}
-              <span className="shrink-0 text-mist-500">→</span>
-            </button>
-          ))}
+          {servers.map((server) => {
+            const s = server as { id?: number | string; name?: string; quality?: string };
+            return (
+              <button
+                key={String(s.id)}
+                type="button"
+                onClick={() => void pickServer(server)}
+                disabled={busy}
+                className={cn(
+                  'tap flex min-h-12 w-full items-center gap-3 rounded-2xl border border-(--glass-line) bg-white/4 px-4 text-left text-[0.8125rem] font-medium text-mist-100 md:hover:bg-white/8',
+                )}
+              >
+                <span className="min-w-0 flex-1 truncate">{s.name ?? 'Server'}</span>
+                {s.quality ? <span className="shrink-0 text-[0.6875rem] text-mist-500">{s.quality}</span> : null}
+                <span className="shrink-0 text-mist-500">→</span>
+              </button>
+            );
+          })}
         </div>
       ) : null}
 
       {step === 'sources' ? (
         <div className="space-y-2">
           {loadError ? <p className="text-sm text-mist-400">{loadError}</p> : null}
-          {sources.map((source, index) => (
+          {sources.map((source) => (
             <a
               key={source.url}
               href={source.url}
@@ -245,10 +261,10 @@ export function ProviderDownloadSheet({
               className="tap flex min-h-12 items-center gap-3 rounded-2xl border border-(--glass-line) bg-white/4 px-4 text-[0.8125rem] font-medium text-mist-100 md:hover:bg-white/8"
             >
               <span className="shrink-0 rounded-full bg-ruby-500/18 px-2 py-0.5 text-[0.625rem] font-semibold tracking-wide text-ruby-200 uppercase">
-                {source.quality?.trim().split(' ')[0] || 'File'}
+                {source.quality?.trim().split(/\s+/)[0] || 'File'}
               </span>
               <span className="min-w-0 flex-1 truncate text-mist-300">
-                {source.quality?.trim() || source.label?.trim() || `Download file ${index + 1}`}
+                {source.quality?.trim() || source.label?.trim() || 'Download file'}
               </span>
               <span className="shrink-0 text-mist-500">↗</span>
             </a>

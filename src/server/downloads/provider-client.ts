@@ -73,10 +73,28 @@ export const PROVIDER_ORIGINS = ['https://nxsha.space', 'https://web.nxsha.app']
 
 export interface ProviderFetchResult {
   ok: boolean;
-  /** The decoded body on success; null otherwise. */
   body: unknown;
-  /** Status per origin tried, for surfacing in the 502 response. */
   statuses: string[];
+}
+
+/**
+ * Resolves the upstream request. When `DOWNLOAD_PROXY_URL` is set, every request is
+ * forwarded through that HTTP(S) proxy — the fix for hosts that refuse datacenter IPs
+ * (the provider returns 403 from serverless runtimes otherwise). Without it, the call
+ * goes direct, which works from a normal machine and in local development.
+ */
+function upstreamFetch(url: string, init: RequestInit, timeoutMs: number): Promise<Response> {
+  const proxyUrl = process.env.DOWNLOAD_PROXY_URL;
+  if (!proxyUrl) return fetch(url, { ...init, signal: AbortSignal.timeout(timeoutMs) });
+
+  // Forward-proxy mode: the proxy fetches the real URL for us, so the egress IP is
+  // the proxy's, not the function's. The proxy decides its own timeout handling.
+  const target = encodeURIComponent(url);
+  return fetch(`${proxyUrl}?url=${target}`, {
+    method: 'GET',
+    headers: { 'user-agent': init.headers && typeof init.headers === 'object' && 'user-agent' in init.headers ? String((init.headers as Record<string, string>)['user-agent']) : 'Mozilla/5.0' },
+    signal: AbortSignal.timeout(timeoutMs + 5_000),
+  });
 }
 
 export async function providerFetch(
@@ -85,15 +103,17 @@ export async function providerFetch(
   timeoutMs = 8_000,
 ): Promise<ProviderFetchResult> {
   const statuses: string[] = [];
+  const usingProxy = Boolean(process.env.DOWNLOAD_PROXY_URL);
 
   for (const origin of PROVIDER_ORIGINS) {
+    const url = `${origin}${path}?q=${encodeURIComponent(query)}`;
     try {
-      const response = await fetch(`${origin}${path}?q=${encodeURIComponent(query)}`, {
-        headers: { 'user-agent': 'Mozilla/5.0', referer: `${origin}/`, accept: 'application/json' },
-        cache: 'no-store',
-        signal: AbortSignal.timeout(timeoutMs),
-      });
-      statuses.push(`${new URL(origin).hostname}:${response.status}`);
+      const response = await upstreamFetch(
+        url,
+        { headers: { 'user-agent': 'Mozilla/5.0', referer: `${origin}/`, accept: 'application/json' } },
+        timeoutMs,
+      );
+      statuses.push(`${new URL(origin).hostname}:${response.status}${usingProxy ? '(proxy)' : ''}`);
       if (!response.ok) continue;
 
       const json = (await response.json().catch(() => null)) as { _hash?: string } | null;
@@ -102,7 +122,7 @@ export async function providerFetch(
       statuses.push(`${new URL(origin).hostname}:undecodable`);
     } catch (error) {
       const reason = error instanceof Error && error.name === 'TimeoutError' ? 'timeout' : 'unreachable';
-      statuses.push(`${new URL(origin).hostname}:${reason}`);
+      statuses.push(`${new URL(origin).hostname}:${reason}${usingProxy ? '(proxy)' : ''}`);
     }
   }
 

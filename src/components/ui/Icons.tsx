@@ -451,3 +451,12 @@ export function ExportIcon(props: IconProps) {
 
 
 
+
+export function PencilIcon(props: IconProps) {
+  return (
+    <Icon {...props}>
+      <path d="M17.25 3.75a2.1 2.1 0 0 1 3 3L8 19l-4.25 1.25L5 16Z" />
+      <path d="m15 6 3 3" />
+    </Icon>
+  );
+}

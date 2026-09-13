@@ -5,7 +5,7 @@ import { BrowseGrid } from '@/components/browse/BrowseGrid';
 import { MediaRail } from '@/components/home/MediaRail';
 import { PageHeading, PageShell } from '@/components/layout/Page';
 import { GridSkeleton, RailSkeleton } from '@/components/ui/Skeleton';
-import { browseHref, isDefaultView, type BrowseQuery, type HubConfig } from '@/lib/metadata/browse';
+import { SORT_OPTIONS, browseHref, isDefaultView, type BrowseQuery, type HubConfig } from '@/lib/metadata/browse';
 
 /** Params every hub route accepts. Filters live in the URL, never in state. */
 export interface HubSearchParams {
@@ -24,8 +24,16 @@ export function HubPage({ hub, query }: { hub: HubConfig; query: BrowseQuery }) 
 
   return (
     <PageShell wide>
-      <PageHeading eyebrow={hub.eyebrow} title={hub.title} description={hub.description}>
-        <BrowseFilters hub={hub} query={query} />
+      <PageHeading eyebrow={hub.eyebrow} title={hub.title} description={hub.tagline}>
+        {/* Only serialisable props cross into the client island — the hub's
+            `catalogs` member is a function and cannot be serialised. */}
+        <BrowseFilters
+          path={hub.path}
+          title={hub.title}
+          genres={hub.genres}
+          sorts={SORT_OPTIONS}
+          query={{ sort: query.sort, genre: query.genre }}
+        />
       </PageHeading>
 
       {filtered ? (
@@ -36,7 +44,7 @@ export function HubPage({ hub, query }: { hub: HubConfig; query: BrowseQuery }) 
         <div className="flex flex-col gap-9 md:gap-12">
           {hub.rails.map((rail, index) => (
             <Suspense key={rail.id} fallback={<RailSkeleton />}>
-              <MediaRail rail={rail} priority={index === 0} />
+              <MediaRail rail={rail} priority={index === 0} numbered={index === 0} />
             </Suspense>
           ))}
         </div>

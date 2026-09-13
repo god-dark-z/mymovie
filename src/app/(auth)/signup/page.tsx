@@ -12,6 +12,11 @@ export default function SignupPage() {
     <AuthShell
       title="Create your account"
       description="Free, and takes about a minute. Your list and preferences follow you to any device you sign in on."
+      editorial={{
+        line: 'Start the first reel.',
+        support:
+          'A free account keeps your list, playback preferences and downloads in step — on the phone, the laptop, and the screen after that.',
+      }}
       footer={<AuthSwitch label="Already have an account?" href="/login" cta="Sign in" />}
     >
       <SignupForm />

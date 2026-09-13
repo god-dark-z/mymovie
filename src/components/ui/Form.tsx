@@ -27,7 +27,7 @@ import { cn } from '@/lib/utils/cn';
 const CONTROL_BASE =
   'w-full rounded-2xl border bg-white/5 px-3.5 text-base text-white placeholder:text-mist-500 md:text-[0.9375rem]';
 const CONTROL_STATE =
-  'border-(--glass-line) transition-colors duration-200 ease-glass focus:border-ruby-400/50 focus:bg-white/8 focus:outline-none focus-visible:ring-2 focus-visible:ring-ruby-400/70 disabled:opacity-50';
+  'border-(--glass-line) transition-[border-color,background-color,box-shadow] duration-200 ease-glass focus:border-ruby-400/55 focus:bg-white/8 focus:shadow-[0_0_0_1px_rgba(244,80,106,0.22),0_10px_30px_-14px_rgba(212,33,61,0.45)] focus:outline-none focus-visible:ring-2 focus-visible:ring-ruby-400/70 disabled:opacity-50';
 const CONTROL_INVALID = 'border-ruby-500/60 bg-ruby-500/8';
 
 export function controlClasses(invalid = false, className?: string): string {
@@ -182,6 +182,7 @@ export function PasswordField({
                   className={cn(
                     'flex-1 rounded-full transition-colors duration-300 ease-glass',
                     step < meter.strength ? METER_TONE[meter.strength] : 'bg-white/12',
+                    'transition-colors duration-300 ease-glass',
                   )}
                 />
               ))}
@@ -238,16 +239,22 @@ export function FormAlert({
  */
 export function SubmitButton({
   pending,
+  succeeded,
   children,
   pendingLabel,
+  succeededLabel,
   className,
   disabled,
   variant = 'accent',
 }: {
   pending: boolean;
+  /** Flashes a quiet success state before the navigation takes over. */
+  succeeded?: boolean;
   children: ReactNode;
   /** Announced while the request is in flight. */
   pendingLabel?: string;
+  /** Announced during the success flash. */
+  succeededLabel?: string;
   className?: string;
   disabled?: boolean;
   variant?: 'accent' | 'outline' | 'glass' | 'solid';
@@ -257,14 +264,23 @@ export function SubmitButton({
       type="submit"
       variant={variant}
       size="lg"
-      disabled={pending || disabled}
+      disabled={pending || disabled || succeeded}
       aria-busy={pending || undefined}
-      className={cn('w-full', className)}
+      className={cn(
+        'w-full tap-glow',
+        succeeded && 'border-jade-400/45 bg-jade-500/18 text-jade-200',
+        className,
+      )}
     >
       {pending ? (
         <>
           <SpinnerIcon className="size-4" />
           {pendingLabel ?? children}
+        </>
+      ) : succeeded ? (
+        <>
+          <CheckIcon className="size-4" />
+          {succeededLabel ?? 'Done'}
         </>
       ) : (
         children

@@ -75,36 +75,10 @@ export function AccountOverview({ justReset }: { justReset: boolean }) {
 
       {user.emailVerified ? null : <VerifyEmailNotice email={user.email} />}
 
-      {/* A premium hero card — the account dashboard's "cover" — with the
-          member's avatar, name, and a quick account-health summary. */}
-      <section className="glass-3 hairline-top relative overflow-hidden rounded-3xl px-5 py-5">
-        <div aria-hidden className="absolute -right-16 -top-16 size-48 rounded-full bg-ruby-500/18 blur-3xl" />
-        <div aria-hidden className="absolute -bottom-12 -left-10 size-40 rounded-full bg-gold-400/10 blur-3xl" />
-        <div className="relative flex items-center gap-4">
-          <Avatar user={user} size="xl" />
-          <div className="min-w-0 flex-1">
-            <p className="truncate font-display text-lg font-semibold text-white md:text-xl">
-              {user.displayName}
-            </p>
-            <p className="mt-0.5 truncate text-[0.8125rem] text-mist-400">{user.email}</p>
-            <div className="mt-2.5 flex flex-wrap items-center gap-2">
-              {user.emailVerified ? (
-                <span className="inline-flex items-center gap-1 rounded-full border border-jade-400/30 bg-jade-400/10 px-2 py-0.5 text-[0.6875rem] font-medium text-jade-300">
-                  <CheckIcon className="size-3" />
-                  Verified
-                </span>
-              ) : (
-                <span className="inline-flex items-center gap-1 rounded-full border border-gold-400/30 bg-gold-400/10 px-2 py-0.5 text-[0.6875rem] font-medium text-gold-400">
-                  Unconfirmed email
-                </span>
-              )}
-              <span className="text-[0.6875rem] text-mist-500">
-                Member since {formatDay(user.createdAt, zone)}
-              </span>
-            </div>
-          </div>
-        </div>
-      </section>
+      {/* Member-since line: the hero band carries identity; this carries tenure. */}
+      <p className="text-[0.8125rem] text-mist-500">
+        Member since {formatDay(user.createdAt, zone)}
+      </p>
 
       <div className="grid grid-cols-2 gap-3 md:gap-4">
         <Tile

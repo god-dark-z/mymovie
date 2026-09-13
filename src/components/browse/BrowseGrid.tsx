@@ -1,3 +1,4 @@
+import { EditorialTile } from '@/components/browse/EditorialTile';
 import { MediaCard, MediaGrid } from '@/components/media/MediaCard';
 import { ButtonLink } from '@/components/ui/Button';
 import { EmptyState } from '@/components/ui/EmptyState';
@@ -9,7 +10,10 @@ import { browseCatalog, browseHref, type BrowseQuery, type HubConfig } from '@/l
  * Filtered hub results.
  *
  * Paging is only offered when the next page has been confirmed to hold titles,
- * so "Next" never lands on an empty grid.
+ * so "Next" never lands on an empty grid. On the first page of a sorted-but-
+ * unfiltered view the lead title is promoted into a full-width editorial
+ * composition, and the grid carries the rest — curation signal, not another
+ * identical poster.
  */
 export async function BrowseGrid({ hub, query }: { hub: HubConfig; query: BrowseQuery }) {
   const { items, degraded, hasMore } = await browseCatalog(hub, query);
@@ -39,10 +43,16 @@ export async function BrowseGrid({ hub, query }: { hub: HubConfig; query: Browse
     );
   }
 
+  const showLead = query.page === 1 && !query.genre && Boolean(items[0]?.backdrop);
+  const lead = showLead ? items[0] : undefined;
+  const rest = showLead ? items.slice(1) : items;
+
   return (
     <div className="gutter-x">
+      {lead ? <EditorialTile media={lead} /> : null}
+
       <MediaGrid stagger>
-        {items.map((item, index) => (
+        {rest.map((item, index) => (
           <div key={item.id} style={{ '--stagger-index': index } as React.CSSProperties}>
             <MediaCard
               media={item}

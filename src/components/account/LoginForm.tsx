@@ -8,6 +8,7 @@ import { FormAlert, PasswordField, SubmitButton, TextField } from '@/components/
 import { CheckboxField } from '@/components/ui/Form';
 import { NO_FAILURE, toFailure, type FormFailure } from '@/lib/auth/form';
 import { isValidEmail } from '@/lib/auth/policy';
+import { navigateAfterAuth } from '@/lib/auth/navigate';
 
 /**
  * Sign-in.
@@ -25,6 +26,7 @@ export function LoginForm({ next }: { next: string }) {
   const [password, setPassword] = useState('');
   const [remember, setRemember] = useState(true);
   const [pending, setPending] = useState(false);
+  const [succeeded, setSucceeded] = useState(false);
   const [failure, setFailure] = useState<FormFailure>(NO_FAILURE);
 
   const disabled = status === 'unavailable' || !configured;
@@ -47,9 +49,12 @@ export function LoginForm({ next }: { next: string }) {
     setFailure(NO_FAILURE);
     try {
       const user = await signIn({ email: trimmed, password, remember });
-      // An unverified account can sign in, but the first thing it should see is the
-      // one action that unlocks the rest of the product.
-      router.replace(user.emailVerified ? next : `/verify-email?next=${encodeURIComponent(next)}`);
+      // A short success beat before the navigation: the button confirms, then the
+      // helper's hard-navigation fallback takes over. Under 700ms — confirmation,
+      // not ceremony.
+      const target = user.emailVerified ? next : `/verify-email?next=${encodeURIComponent(next)}`;
+      setSucceeded(true);
+      window.setTimeout(() => navigateAfterAuth(router, target), 650);
     } catch (error) {
       setFailure(toFailure(error));
       setPassword('');
@@ -118,7 +123,13 @@ export function LoginForm({ next }: { next: string }) {
         />
       </div>
 
-      <SubmitButton pending={pending} pendingLabel="Signing in…" className="mt-1">
+      <SubmitButton
+        pending={pending}
+        succeeded={succeeded}
+        pendingLabel="Signing in…"
+        succeededLabel="Welcome back"
+        className="mt-1"
+      >
         Sign in
       </SubmitButton>
     </form>

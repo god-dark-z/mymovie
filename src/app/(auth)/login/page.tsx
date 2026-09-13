@@ -20,6 +20,11 @@ export default async function LoginPage({
     <AuthShell
       title="Welcome back"
       description="Sign in to pick up your list, your preferences and your downloads on this device."
+      editorial={{
+        line: 'Your next watch is already waiting.',
+        support:
+          'One quiet sign-in brings back your list, your servers, your subtitles — on every screen you own.',
+      }}
       footer={<AuthSwitch label="New to Cineora?" href="/signup" cta="Create an account" />}
     >
       {/* Validated on the server so an open-redirect link never reaches the client. */}

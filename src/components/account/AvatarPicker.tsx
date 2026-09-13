@@ -98,7 +98,7 @@ function Picker({ user }: { user: PublicUser }) {
   return (
     <div className="flex flex-col gap-4">
       <div className="flex items-center gap-4 md:gap-5">
-        <div className="relative shrink-0">
+        <div className="edge-ring relative shrink-0 rounded-full ring-1 ring-white/15">
           <Avatar user={user} size="xl" />
           {busy === 'upload' ? (
             <span className="absolute inset-0 grid place-items-center rounded-full bg-ink-900/70">

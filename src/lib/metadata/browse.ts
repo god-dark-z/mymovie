@@ -48,6 +48,9 @@ export interface HubConfig {
   path: '/movies' | '/series' | '/anime';
   eyebrow: string;
   title: string;
+  /** One editorial line under the h1 — the on-page voice. */
+  tagline: string;
+  /** Longer, plainer framing. Used in metadata; the page shows the tagline. */
   description: string;
   /** Editorial rails shown when no filter is applied. */
   rails: RailDefinition[];
@@ -64,8 +67,9 @@ export const HUBS: Record<HubId, HubConfig> = {
   movies: {
     id: 'movies',
     path: '/movies',
-    eyebrow: 'Browse',
+    eyebrow: 'The Collection',
     title: 'Movies',
+    tagline: 'Find something worth the evening.',
     description:
       'Every film in the public catalogue. Filter by genre, or re-sort by rating and release date.',
     rails: MOVIE_RAILS,
@@ -77,8 +81,9 @@ export const HUBS: Record<HubId, HubConfig> = {
   series: {
     id: 'series',
     path: '/series',
-    eyebrow: 'Browse',
+    eyebrow: 'Ongoing Stories',
     title: 'Series',
+    tagline: 'Shows worth committing to.',
     description:
       'Episodic television, from long-running staples to this year’s new seasons. Anime lives in its own hub.',
     rails: TV_RAILS,
@@ -90,8 +95,9 @@ export const HUBS: Record<HubId, HubConfig> = {
   anime: {
     id: 'anime',
     path: '/anime',
-    eyebrow: 'Browse',
+    eyebrow: 'Beyond Live-Action',
     title: 'Anime',
+    tagline: 'From seasonal premieres to finished classics.',
     description: 'Japanese animation — series and films together, identified from the catalogue itself.',
     rails: ANIME_RAILS,
     genres: ANIME_GENRES,

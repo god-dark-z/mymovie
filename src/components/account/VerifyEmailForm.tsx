@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useAuth } from '@/components/account/AuthProvider';
+import { navigateAfterAuth } from '@/lib/auth/navigate';
 import { Button } from '@/components/ui/Button';
 import { FormAlert, SubmitButton, TextField } from '@/components/ui/Form';
 import { CheckIcon, MailIcon, SpinnerIcon } from '@/components/ui/Icons';
@@ -44,7 +45,8 @@ export function VerifyEmailForm({ token, next }: { token: string | null; next: s
       adopt(result);
       setPhase('done');
       // A short pause so the confirmation is actually seen rather than flashing past.
-      window.setTimeout(() => router.replace(`/welcome?next=${encodeURIComponent(next)}`), 900);
+      // The helper's hard-navigation fallback covers the silent-soft-nav-failure case.
+      window.setTimeout(() => navigateAfterAuth(router, `/welcome?next=${encodeURIComponent(next)}`), 900);
     },
     [adopt, next, router],
   );

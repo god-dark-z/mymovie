@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useAuth } from '@/components/account/AuthProvider';
+import { navigateAfterAuth } from '@/lib/auth/navigate';
 import { FormAlert, PasswordField, SubmitButton } from '@/components/ui/Form';
 import { KeyIcon } from '@/components/ui/Icons';
 import { api } from '@/lib/auth/client';
@@ -66,7 +67,7 @@ export function ResetPasswordForm({ token }: { token: string | null }) {
       setPassword('');
       setConfirm('');
       adopt(result);
-      router.replace('/account?reset=1');
+      navigateAfterAuth(router, '/account?reset=1');
     } catch (error) {
       const next = toFailure(error);
       setFailure(next);

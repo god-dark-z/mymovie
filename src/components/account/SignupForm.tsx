@@ -37,6 +37,7 @@ export function SignupForm() {
   const [password, setPassword] = useState('');
   const [accepted, setAccepted] = useState(false);
   const [pending, setPending] = useState(false);
+  const [succeeded, setSucceeded] = useState(false);
   const [failure, setFailure] = useState<FormFailure>(NO_FAILURE);
 
   const assessment = useMemo(
@@ -92,18 +93,22 @@ export function SignupForm() {
       });
       // The password is dropped from memory as soon as it has been sent.
       setPassword('');
-      setStage({
-        kind: 'sent',
-        email: result.email,
-        ...(result.devVerificationUrl ? { devUrl: result.devVerificationUrl } : {}),
-      });
+      // The success beat reads on the button before the confirmation screen takes
+      // over — confirmation, not ceremony.
+      setSucceeded(true);
+      window.setTimeout(() => {
+        setStage({
+          kind: 'sent',
+          email: result.email,
+          ...(result.devVerificationUrl ? { devUrl: result.devVerificationUrl } : {}),
+        });
+      }, 700);
     } catch (error) {
       const next = toFailure(error);
       setFailure(next);
+      setPending(false);
       // A rejected address belongs to the first step, so send the user back to it.
       if (next.fields.email) setStage({ kind: 'details' });
-    } finally {
-      setPending(false);
     }
   }
 
@@ -208,7 +213,13 @@ export function SignupForm() {
         />
       </div>
 
-      <SubmitButton pending={pending} pendingLabel="Creating your account…" className="mt-1">
+      <SubmitButton
+        pending={pending}
+        succeeded={succeeded}
+        pendingLabel="Creating your account…"
+        succeededLabel="Account created"
+        className="mt-1"
+      >
         Create account
       </SubmitButton>
     </form>

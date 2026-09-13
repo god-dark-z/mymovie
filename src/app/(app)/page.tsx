@@ -1,7 +1,7 @@
 import { Suspense } from 'react';
 import type { Metadata } from 'next';
 import { ContinueWatchingRail } from '@/components/home/ContinueWatchingRail';
-import { Hero } from '@/components/home/Hero';
+import { HeroSwap } from '@/components/home/HeroSwap';
 import { MediaRail } from '@/components/home/MediaRail';
 import { JsonLd } from '@/components/seo/JsonLd';
 import { ErrorState } from '@/components/ui/ErrorState';
@@ -39,7 +39,7 @@ export default function HomePage() {
 
         {HOME_RAILS.map((rail, index) => (
           <Suspense key={rail.id} fallback={<RailSkeleton />}>
-            <MediaRail rail={rail} priority={index === 0} />
+            <MediaRail rail={rail} priority={index === 0} numbered={index === 0} />
           </Suspense>
         ))}
       </div>
@@ -72,7 +72,7 @@ async function HeroSection() {
 
   if (items.length === 0) return null;
 
-  return <Hero items={items} />;
+  return <HeroSwap items={items} />;
 }
 
 /** Alternates movies and series so the hero is never five films in a row. */

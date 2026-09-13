@@ -16,10 +16,14 @@ import { railHref, type RailDefinition } from '@/lib/metadata/rails';
 export async function MediaRail({
   rail,
   priority = false,
+  numbered = false,
 }: {
   rail: RailDefinition;
   /** Eager-loads the first few posters — only for the topmost rail. */
   priority?: boolean;
+  /** Renders the rail as an ordered chart: rank numerals on the artwork, titles
+      only beneath. Used for a hub's lead rail, where the ordering *is* the point. */
+  numbered?: boolean;
 }) {
   const { data } = await metadata.getCatalog(rail.request);
   if (data.length === 0) return null;
@@ -28,7 +32,11 @@ export async function MediaRail({
     <Rail title={rail.title} subtitle={rail.subtitle} href={railHref(rail.request)}>
       {data.map((item, index) => (
         <RailCard key={item.id}>
-          <MediaCard media={item} priority={priority && index < 5} />
+          <MediaCard
+            media={item}
+            priority={priority && index < 5}
+            rank={numbered ? index + 1 : undefined}
+          />
         </RailCard>
       ))}
     </Rail>

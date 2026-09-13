@@ -54,18 +54,25 @@ export function ChipLink({
   active,
   className,
   scroll,
+  onClick,
+  'aria-label': ariaLabel,
 }: {
   children: React.ReactNode;
   href: string;
   active?: boolean;
   className?: string;
   scroll?: boolean;
+  /** Fires alongside navigation — how picker sheets close themselves. */
+  onClick?: () => void;
+  'aria-label'?: string;
 }) {
   return (
     <Link
       href={href}
       scroll={scroll}
+      onClick={onClick}
       aria-current={active ? 'page' : undefined}
+      aria-label={ariaLabel}
       className={chipClasses(active, className)}
     >
       {children}

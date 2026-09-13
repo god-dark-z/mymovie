@@ -1,11 +1,11 @@
 import Link from 'next/link';
 import { KindBadge, RatingBadge } from '@/components/ui/Badge';
-import { PlayIcon } from '@/components/ui/Icons';
+import { PlayIcon, StarIcon } from '@/components/ui/Icons';
 import { PosterImage } from '@/components/ui/PosterImage';
 import { detailHref } from '@/lib/metadata/classify';
 import { posterUrl } from '@/lib/metadata/images';
 import { cn } from '@/lib/utils/cn';
-import { joinNonEmpty } from '@/lib/utils/format';
+import { formatRating, joinNonEmpty } from '@/lib/utils/format';
 import type { MediaSummary } from '@/types/media';
 
 /**
@@ -21,6 +21,7 @@ export function MediaCard({
   priority,
   showKind = false,
   progress,
+  rank,
   className,
 }: {
   media: MediaSummary;
@@ -29,6 +30,8 @@ export function MediaCard({
   showKind?: boolean;
   /** Watch progress as a 0–1 fraction. Shows a thin accent bar under the poster. */
   progress?: number;
+  /** Position in an ordered rail (1-based). Renders the cinematic rank numeral. */
+  rank?: number;
   className?: string;
 }) {
   const meta = joinNonEmpty([media.year ?? media.releaseInfo, media.genres[0]]);
@@ -57,9 +60,39 @@ export function MediaCard({
         />
 
         <div
-          className="absolute inset-x-0 bottom-0 h-2/5 bg-linear-to-t from-ink-950/85 to-transparent opacity-0 transition-opacity duration-300 md:group-hover/card:opacity-100"
+          className={cn(
+            'absolute inset-x-0 bottom-0 h-2/5 bg-linear-to-t from-ink-950/85 to-transparent md:opacity-0 md:transition-opacity md:duration-300 md:group-hover/card:opacity-100',
+            rank != null && 'md:opacity-100',
+          )}
           aria-hidden
         />
+
+        {/* The rank numeral: an ordered rail reads as a chart, and the numeral is
+            the whole point of its composition. It lives on the artwork, so the
+            permanent scrim above keeps it legible without a hover. */}
+        {rank != null ? (
+          <div
+            aria-hidden
+            className="absolute bottom-1.5 left-3 flex flex-col items-start"
+          >
+            <span className="font-display text-[2.375rem] leading-[0.85] font-extrabold text-white drop-shadow-[0_3px_10px_rgba(0,0,0,0.9)] tabular-nums">
+              {rank}
+            </span>
+            <span className="mt-1 h-0.5 w-5 rounded-full bg-ruby-400" />
+          </div>
+        ) : null}
+
+        {/* The rating, revealed on hover: metadata appears through interaction
+            rather than shouting permanently from every card. */}
+        {media.rating ? (
+          <span
+            aria-hidden
+            className="glass-flat absolute top-2 right-2 flex items-center gap-1 rounded-full px-2 py-1 text-[0.6875rem] font-semibold text-mist-100 opacity-0 tabular-nums transition duration-300 ease-glass md:group-hover/card:opacity-100"
+          >
+            <StarIcon className="size-3 text-gold-400" />
+            {formatRating(media.rating)}
+          </span>
+        ) : null}
 
         {/* A thin progress bar under in-progress thumbnails — the strongest
             signal that the app "knows" you. Only rendered when progress is set. */}
@@ -96,10 +129,12 @@ export function MediaCard({
         <p className="truncate text-[0.8125rem] font-medium text-mist-100 transition-colors duration-200 md:group-hover/card:text-white">
           {media.title}
         </p>
-        <div className="mt-1 flex items-center gap-2">
-          {meta ? <span className="truncate text-[0.6875rem] text-mist-500">{meta}</span> : null}
-          <RatingBadge rating={media.rating} className="ml-auto shrink-0" />
-        </div>
+        {rank == null ? (
+          <div className="mt-1 flex items-center gap-2">
+            {meta ? <span className="truncate text-[0.6875rem] text-mist-500">{meta}</span> : null}
+            <RatingBadge rating={media.rating} className="ml-auto shrink-0" />
+          </div>
+        ) : null}
       </div>
     </Link>
   );

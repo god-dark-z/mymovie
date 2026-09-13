@@ -14,6 +14,7 @@ import {
   ArrowLeftIcon,
   CaptionsIcon,
   ChevronLeftIcon,
+  DownloadIcon,
   GlobeIcon,
   ListIcon,
   PlayIcon,
@@ -22,6 +23,7 @@ import {
   SkipIcon,
   SpinnerIcon,
 } from '@/components/ui/Icons';
+import { ProviderDownloadSheet } from '@/components/downloads/ProviderDownloadSheet';
 import { PosterImage } from '@/components/ui/PosterImage';
 import { useToast } from '@/components/ui/Toast';
 import { useMounted } from '@/hooks/useMounted';
@@ -89,6 +91,7 @@ export function WatchScreen({
   const { toast } = useToast();
 
   const [sheet, setSheet] = useState<OpenSheet>(null);
+  const [downloadOpen, setDownloadOpen] = useState(false);
   const [attempt, setAttempt] = useState(0);
 
   const targetKey = `${detail.id}|${episodeRef?.season ?? ''}|${episodeRef?.episode ?? ''}`;
@@ -352,6 +355,12 @@ export function WatchScreen({
       <div className="gutter-x pt-4 pb-[calc(2.5rem+var(--spacing-safe-b))]">
         <PlayerBar>
           <ControlButton
+            icon={<DownloadIcon className="size-4.5" />}
+            label="Download"
+            value={detail.ids.tmdbId ? 'Resolve links' : 'Links'}
+            onClick={() => setDownloadOpen(true)}
+          />
+          <ControlButton
             icon={<ServerIcon className="size-4.5" />}
             label="Server"
             value={serverConfig.label}
@@ -471,6 +480,22 @@ export function WatchScreen({
           carries a language is decided by the provider, not by this app.
         </p>
       </div>
+
+      <ProviderDownloadSheet
+        open={downloadOpen}
+        onClose={() => setDownloadOpen(false)}
+        title={joinNonEmpty([detail.title, currentLabel], ' — ')}
+        tmdbId={detail.ids.tmdbId}
+        imdbId={detail.ids.imdbId}
+        kind={detail.kind}
+        season={episodeRef?.season}
+        episode={episodeRef?.episode}
+        fallbackHref={
+          detail.ids.imdbId
+            ? `https://web.nxsha.app/dl/${detail.kind === 'movie' ? 'movie' : 'tv'}/${detail.ids.imdbId}`
+            : undefined
+        }
+      />
       <ServerSheet
         open={sheet === 'server'}
         onClose={() => setSheet(null)}

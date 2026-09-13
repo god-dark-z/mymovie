@@ -16,7 +16,7 @@ import { NextResponse, type NextRequest } from 'next/server';
  */
 export const config = {
   matcher: [
-    '/((?!_next/static|_next/image|favicon.ico|icon.svg|manifest.webmanifest|robots.txt|sitemap.xml|api/auth|api/auth/diagnose).*)',
+    '/((?!_next/static|_next/image|favicon.ico|icon.svg|manifest.webmanifest|robots.txt|sitemap.xml|api/auth|api/auth/diagnose|nx-relay|nx-relay-space).*)',
   ],
 };
 

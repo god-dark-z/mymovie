@@ -41,12 +41,15 @@ export function TitlePage({
 
   // Resolved on the server, from the operator's own catalogue. Almost always null:
   // Cineora holds no rights to what the metadata and playback providers serve, so an
-  // operator-catalogue Download button appears only where the deployment has declared its
-  // own files. When there is none, we offer provider downloads resolved through Cineora's
-  // own proxy API (gated behind a captcha) so the backend stays hidden.
+  // operator-catalogue Download button appears only where the deployment has declared
+  // its own files. Otherwise provider downloads resolve through Cineora's server in
+  // the background — the provider's endpoints and security nodes stay hidden.
   const offer = offerFor(detail.id);
   const providerTmdbId = detail.ids.tmdbId;
-  const hasProviderDownload = Boolean(providerTmdbId);
+  const hasProviderDownload = Boolean(providerTmdbId || detail.ids.imdbId);
+  const providerFallback = detail.ids.imdbId
+    ? `https://web.nxsha.app/dl/${detail.kind === 'movie' ? 'movie' : 'tv'}/${detail.ids.imdbId}`
+    : undefined;
 
   return (
     <div className="animate-fade-in pb-shell">
@@ -60,11 +63,13 @@ export function TitlePage({
             ) : null}
             <WatchlistButton media={detail} />
             {offer ? <DownloadButton offer={offer} /> : null}
-            {!offer && hasProviderDownload && providerTmdbId ? (
+            {!offer && hasProviderDownload ? (
               <ProviderDownloadButton
                 title={detail.title}
                 tmdbId={providerTmdbId}
+                imdbId={detail.ids.imdbId}
                 kind={detail.kind}
+                fallbackHref={providerFallback}
               />
             ) : null}
             {!playable ? (

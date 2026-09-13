@@ -57,3 +57,24 @@
   command = "npm run dev"
   framework = "#custom"
   targetPort = 3000
+
+# Same-origin relay for the download resolver.
+#
+# The download provider refuses datacenter IPs, which includes Netlify Functions'
+# egress — so when a direct fetch fails there, the resolver retries through this
+# path instead: the request re-enters the site's own origin and Netlify's CDN
+# proxy forwards it to the provider from the edge, a different egress subsystem.
+# `force = true` is required so the rewrite is handled by the CDN before any
+# function can see the path. Nothing about the provider is exposed: the path is
+# a generic relay and the encrypted query travels in its query string.
+[[redirects]]
+  from = "/nx-relay/*"
+  to = "https://web.nxsha.app/:splat"
+  status = 200
+  force = true
+
+[[redirects]]
+  from = "/nx-relay-space/*"
+  to = "https://nxsha.space/:splat"
+  status = 200
+  force = true

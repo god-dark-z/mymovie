@@ -6,25 +6,30 @@ import { Button } from '@/components/ui/Button';
 import { DownloadIcon } from '@/components/ui/Icons';
 
 /**
- * The download CTA for titles resolved through the provider network.
+ * The download CTA on a title page.
  *
- * Opens a three-step sheet — math gate, server picker, links — all backed by
- * Cineora's own proxy API, so the provider's origin never appears in the
- * visitor's network log or address bar.
+ * Opens the resolver sheet: one background pass resolves every server group and
+ * its direct links — the provider's security nodes and endpoints stay entirely
+ * server-side.
  */
 export function ProviderDownloadButton({
   title,
   tmdbId,
+  imdbId,
   kind,
   season,
   episode,
+  fallbackHref,
   className,
 }: {
   title: string;
-  tmdbId: string;
+  tmdbId?: string;
+  imdbId?: string;
   kind: 'movie' | 'tv' | 'anime';
   season?: number;
   episode?: number;
+  /** Last-resort escape hatch when resolution fails. */
+  fallbackHref?: string;
   className?: string;
 }) {
   const [open, setOpen] = useState(false);
@@ -40,9 +45,11 @@ export function ProviderDownloadButton({
         onClose={() => setOpen(false)}
         title={title}
         tmdbId={tmdbId}
+        imdbId={imdbId}
         kind={kind}
         season={season}
         episode={episode}
+        fallbackHref={fallbackHref}
       />
     </>
   );

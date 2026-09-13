@@ -1,10 +1,11 @@
 'use client';
 
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
-import type { ReactNode } from 'react';
+import { usePathname, useRouter } from 'next/navigation';
+import { useState, type ReactNode } from 'react';
 import { useAuth } from '@/components/account/AuthProvider';
 import { Avatar } from '@/components/account/Avatar';
+import { AvatarEditorSheet } from '@/components/account/AvatarEditorSheet';
 import { PageShell } from '@/components/layout/Page';
 import { ButtonLink } from '@/components/ui/Button';
 import {
@@ -13,6 +14,7 @@ import {
   CheckIcon,
   DownloadIcon,
   EyeIcon,
+  LogOutIcon,
   LockIcon,
   PencilIcon,
   ShieldIcon,
@@ -62,7 +64,16 @@ export function AccountShell({
   children: ReactNode;
 }) {
   const pathname = usePathname();
-  const { status, signedIn, configured, user } = useAuth();
+  const router = useRouter();
+  const { status, signedIn, configured, user, signOut } = useAuth();
+  const [avatarOpen, setAvatarOpen] = useState(false);
+
+  // Sidebar sign-out: the session ends here, and the reader is returned to the
+  // front door rather than an authenticated page they can no longer view.
+  const onSignOut = async () => {
+    await signOut();
+    router.replace('/');
+  };
 
   if (status === 'loading') {
     return (
@@ -101,10 +112,12 @@ export function AccountShell({
 
   return (
     <PageShell>
-      <ProfileHero />
+      <ProfileHero onEditAvatar={() => setAvatarOpen(true)} />
 
       <div className="gutter-x mt-6 md:grid md:grid-cols-[15rem_minmax(0,1fr)] md:items-start md:gap-8 lg:grid-cols-[16rem_minmax(0,1fr)]">
-        <AccountNav pathname={pathname} />
+        <div>
+          <AccountNav pathname={pathname} onSignOut={onSignOut} />
+        </div>
         <section aria-label={title} className="mt-5 flex min-w-0 flex-col gap-4 md:mt-0 md:gap-5">
           <div className="animate-fade-in">
             <h1 className="font-display text-xl font-semibold tracking-[-0.01em] text-white md:text-2xl">
@@ -119,6 +132,8 @@ export function AccountShell({
           {children}
         </section>
       </div>
+
+      <AvatarEditorSheet open={avatarOpen} onClose={() => setAvatarOpen(false)} />
     </PageShell>
   );
 }
@@ -129,7 +144,7 @@ export function AccountShell({
  * is the visual anchor — a glass frame, a slow illumination on hover, and an
  * edit chip that appears to say the frame itself is a door to /account/profile.
  */
-function ProfileHero() {
+function ProfileHero({ onEditAvatar }: { onEditAvatar: () => void }) {
   const { user } = useAuth();
   if (!user) return null;
 
@@ -143,8 +158,9 @@ function ProfileHero() {
       <div aria-hidden className="absolute -bottom-16 -left-12 size-44 rounded-full bg-white/[0.04] blur-3xl" />
 
       <div className="relative flex items-center gap-4 md:gap-6">
-        <Link
-          href="/account/profile"
+        <button
+          type="button"
+          onClick={onEditAvatar}
           aria-label="Change your profile picture"
           className="tap group/avatar relative shrink-0 rounded-full"
         >
@@ -162,7 +178,7 @@ function ProfileHero() {
           >
             <PencilIcon className="size-3.5" />
           </span>
-        </Link>
+        </button>
 
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5">
@@ -213,7 +229,7 @@ function ProfileHero() {
   );
 }
 
-function AccountNav({ pathname }: { pathname: string }) {
+function AccountNav({ pathname, onSignOut }: { pathname: string; onSignOut: () => Promise<void> }) {
   return (
     <nav aria-label="Account sections" className="md:sticky md:top-[calc(var(--header-h)+1rem)]">
       {/* One list, two presentations: a scrolling rail on a handset, a glass
@@ -252,6 +268,19 @@ function AccountNav({ pathname }: { pathname: string }) {
           );
         })}
       </ul>
+
+      {/* Sign-out lives at the bottom of the navigation — reachable from every
+          section, styled quieter than the sections above it. */}
+      <div className="mt-4 hidden border-t border-(--glass-line) pt-3 md:block">
+        <button
+          type="button"
+          onClick={() => void onSignOut()}
+          className="tap flex min-h-10 w-full items-center gap-2.5 rounded-2xl px-3.5 text-[0.8125rem] font-medium text-mist-400 transition-colors duration-200 ease-glass hover:bg-ruby-500/10 hover:text-ruby-200"
+        >
+          <LogOutIcon className="size-[1.0625rem]" aria-hidden />
+          Sign out
+        </button>
+      </div>
     </nav>
   );
 }

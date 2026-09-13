@@ -34,11 +34,9 @@ import { formatRelativeTime } from '@/lib/utils/format';
  * than replacing the whole page with an error.
  */
 export function AccountOverview({ justReset }: { justReset: boolean }) {
-  const router = useRouter();
-  const { user, signOut } = useAuth();
+  const { user } = useAuth();
   const [deviceCount, setDeviceCount] = useState<number | null>(null);
   const [recent, setRecent] = useState<ActivityResponse['activity'] | null>(null);
-  const [leaving, setLeaving] = useState(false);
 
   useEffect(() => {
     let live = true;
@@ -58,12 +56,6 @@ export function AccountOverview({ justReset }: { justReset: boolean }) {
 
   if (!user) return null;
   const zone = user.preferences.timezone;
-
-  async function onSignOut() {
-    setLeaving(true);
-    await signOut();
-    router.replace('/');
-  }
 
   return (
     <>
@@ -160,22 +152,40 @@ export function AccountOverview({ justReset }: { justReset: boolean }) {
         </div>
       </AccountCard>
 
-      <AccountCard>
-        <Button
-          variant="outline"
-          size="lg"
-          className="w-full"
-          onClick={onSignOut}
-          disabled={leaving}
-        >
-          <LogOutIcon className="size-4" />
-          {leaving ? 'Signing out…' : 'Sign out of this device'}
-        </Button>
-        <p className="mt-3 text-center text-xs text-mist-500">
-          Signing out here leaves your other devices alone.{' '}
-          <Link href="/account/sessions" className="underline decoration-white/25 underline-offset-4">
-            Manage all devices
+      {/* Account facts that are read-only by nature: identity lives in the hero,
+          but the email and tenure belong somewhere scannable too. */}
+      <AccountCard title="Account information">
+        <dl className="flex flex-col gap-2.5 text-[0.8125rem]">
+          <div className="flex items-center justify-between gap-4">
+            <dt className="text-mist-500">Email</dt>
+            <dd className="truncate font-medium text-mist-100">{user.email}</dd>
+          </div>
+          <div className="flex items-center justify-between gap-4">
+            <dt className="shrink-0 text-mist-500">Status</dt>
+            <dd>
+              {user.emailVerified ? (
+                <span className="inline-flex items-center gap-1 rounded-full border border-jade-400/30 bg-jade-400/10 px-2 py-0.5 text-[0.6875rem] font-medium text-jade-300">
+                  <CheckIcon className="size-3" />
+                  Active · verified
+                </span>
+              ) : (
+                <span className="inline-flex items-center gap-1 rounded-full border border-gold-400/30 bg-gold-400/10 px-2 py-0.5 text-[0.6875rem] font-medium text-gold-400">
+                  Awaiting confirmation
+                </span>
+              )}
+            </dd>
+          </div>
+          <div className="flex items-center justify-between gap-4">
+            <dt className="text-mist-500">Member since</dt>
+            <dd className="font-medium text-mist-100">{formatDay(user.createdAt, zone)}</dd>
+          </div>
+        </dl>
+        <p className="mt-3 border-t border-(--glass-line) pt-3 text-xs leading-relaxed text-mist-500">
+          Signing out lives in the sidebar. To close this account entirely, see{' '}
+          <Link href="/account/privacy" className="underline decoration-white/25 underline-offset-4">
+            Privacy &amp; data
           </Link>
+          .
         </p>
       </AccountCard>
     </>

@@ -831,6 +831,63 @@
     }
   }
 
+  /* ---- Phones: a different physics for the same gesture ------------------
+     Animating height/max-width/padding re-runs layout every frame, and the
+     blurred pill re-renders its backdrop behind it — on phone GPUs that is the
+     scroll jank. So under 48rem the collapse means something cheaper: the whole
+     pill slides out of the way (transform + opacity only, compositor work), and
+     every geometry override from the desktop morph is reverted so the class
+     flip causes no layout animation at all. Scrolling up slides the same pill
+     straight back in, fully expanded. Desktop keeps the crystal morph above. */
+  @media (max-width: 47.99rem) {
+    .glass-nav {
+      transition:
+        transform 0.38s var(--ease-glass),
+        opacity 0.3s var(--ease-glass);
+    }
+
+    .nav-collapsed .glass-nav {
+      height: var(--nav-h) !important;
+      max-width: 100%;
+      padding-inline: 0.25rem !important;
+      gap: 0.25rem !important;
+      transform: translate3d(0, calc(100% + env(safe-area-inset-bottom, 0px) + 12px), 0);
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    /* Cells hold their expanded geometry while hidden: no fold, no reflow. */
+    .nav-collapsed .nav-dest {
+      max-width: 7rem;
+      opacity: 1;
+      transform: none;
+      visibility: visible;
+    }
+
+    .nav-collapsed .nav-sep {
+      max-width: 1.25rem;
+      opacity: 1;
+      visibility: visible;
+    }
+
+    .nav-collapsed .nav-label {
+      max-height: 1.25rem;
+      opacity: 1;
+      transform: none;
+    }
+
+    .nav-collapsed .nav-brand {
+      max-width: 0;
+      opacity: 0;
+      transform: scale(0.6);
+      clip-path: inset(-1rem 100% -1rem -1rem);
+    }
+
+    .nav-collapsed .nav-cell {
+      gap: 0.1875rem;
+    }
+  }
+
   /* The pill's brand tile: a lit ruby chip carrying the mark in mono white. */
   .brand-tile {
     background-image: linear-gradient(150deg, var(--color-ruby-400), var(--color-ruby-600));

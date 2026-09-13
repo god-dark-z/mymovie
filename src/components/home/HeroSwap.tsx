@@ -11,7 +11,6 @@ import { PosterImage } from '@/components/ui/PosterImage';
 import { detailHref } from '@/lib/metadata/classify';
 import { backdropUrl, posterUrl } from '@/lib/metadata/images';
 import { formatRuntime, joinNonEmpty } from '@/lib/utils/format';
-import { cn } from '@/lib/utils/cn';
 import type { MediaSummary } from '@/types/media';
 
 /**
@@ -40,10 +39,6 @@ function useSwapSize() {
 export function HeroSwap({ items }: { items: MediaSummary[] }) {
   const router = useRouter();
   const [index, setIndex] = useState(0);
-  // True between "a swap begins" and "the new card has arrived": the info panel
-  // fades out for that window, so its text is never caught beside the wrong
-  // artwork mid-transition.
-  const [leaving, setLeaving] = useState(false);
   const { w, h } = useSwapSize();
 
   const count = items.length;
@@ -89,17 +84,11 @@ export function HeroSwap({ items }: { items: MediaSummary[] }) {
       </div>
 
       <div className="gutter-x relative flex min-h-[72svh] flex-col items-center justify-center gap-10 pt-[calc(var(--spacing-safe-t)+1.5rem)] pb-14 md:min-h-[78svh] md:flex-row md:items-center md:justify-between md:gap-14">
-        {/* Info panel for whichever card is at the front. The OUTER div owns the
-            swap-window fade (transition-based, so `animate-fade-in`'s fill-mode
-            can never pin opacity over it); the INNER keyed div replays its
-            entrance when the front item changes. */}
-        <div
-          className={cn(
-            'order-2 max-w-xl text-center transition-opacity duration-300 ease-glass md:order-1 md:text-left',
-            leaving && 'opacity-0',
-          )}
-        >
-          <div key={front.id} className="animate-fade-in">
+        {/* Info panel for whichever card is at the front. CardSwap announces the
+            new index the same frame the swap motion begins, and this keyed panel
+            replays its entrance then — artwork and copy change as one state, with
+            no dead gap between them. */}
+        <div key={front.id} className="animate-fade-in order-2 max-w-xl text-center md:order-1 md:text-left">
           <div className="flex items-center justify-center gap-2.5 md:justify-start">
             <KindBadge kind={front.kind} isAnime={front.isAnime} />
             <RatingBadge rating={front.rating} />
@@ -128,7 +117,6 @@ export function HeroSwap({ items }: { items: MediaSummary[] }) {
             </ButtonLink>
             <WatchlistButton media={front} />
           </div>
-          </div>
         </div>
 
         {/* The card stack. */}
@@ -142,7 +130,6 @@ export function HeroSwap({ items }: { items: MediaSummary[] }) {
             pauseOnHover
             skewAmount={5}
             onIndexChange={setIndex}
-            onSwapStart={() => setLeaving(true)}
             onCardClick={(i) => {
               const item = items[i];
               if (item) router.push(detailHref(item.kind, item.id));

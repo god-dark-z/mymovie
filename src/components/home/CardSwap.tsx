@@ -26,11 +26,9 @@ export interface CardSwapProps {
   pauseOnHover?: boolean;
   skewAmount?: number;
   easing?: 'linear' | 'elastic';
-  /** Fires whenever the front card changes (including the initial placement). */
+  /** Fires whenever the front card changes — at the same frame the swap motion
+      begins, so paired UI (the hero info panel) transitions in lockstep. */
   onIndexChange?: (index: number) => void;
-  /** Fires the instant a swap begins — the cue for paired UI (the hero info
-      panel) to transition out, so text and artwork swap inside the same window. */
-  onSwapStart?: () => void;
   onCardClick?: (index: number) => void;
   className?: string;
   children: ReactNode;
@@ -73,7 +71,6 @@ export function CardSwap({
   skewAmount = 6,
   easing = 'elastic',
   onIndexChange,
-  onSwapStart,
   onCardClick,
   className,
   children,
@@ -90,9 +87,7 @@ export function CardSwap({
   const container = useRef<HTMLDivElement>(null);
   const onScreen = useRef(true);
   const indexChange = useRef(onIndexChange);
-  const swapStart = useRef(onSwapStart);
   indexChange.current = onIndexChange;
-  swapStart.current = onSwapStart;
 
   useEffect(() => {
     const config =
@@ -123,14 +118,11 @@ export function CardSwap({
       const elFront = cardAt(front);
       if (!elFront) return;
 
-      // Synchronization contract with the paired UI: `onSwapStart` fires this
-      // frame (the partner fades its old state out), and `onIndexChange` fires
-      // just before the incoming card settles into the front slot (~0.9s in) —
-      // so the new poster and the new title/metadata arrive as one state, and
-      // no frame ever shows one side of the old movie beside the other side of
-      // the new one.
-      swapStart.current?.();
-      const nextFront = rest[0];
+      // Synchronization contract: the new front card is announced THIS frame —
+      // the same frame the outgoing card starts leaving and the incoming card
+      // starts rising. The info panel fades in beside the arriving artwork, so
+      // text and card change together with no dead gap between them.
+      indexChange.current?.(rest[0]);
 
       const tl = gsap.timeline();
       tlRef.current = tl;
@@ -138,7 +130,6 @@ export function CardSwap({
       tl.to(elFront, { y: '+=500', duration: config.durDrop, ease: config.ease });
 
       tl.addLabel('promote', `-=${config.durDrop * config.promoteOverlap}`);
-      tl.call(() => indexChange.current?.(nextFront), undefined, 'promote+=1.1');
       rest.forEach((idx, i) => {
         const el = cardAt(idx);
         if (!el) return;

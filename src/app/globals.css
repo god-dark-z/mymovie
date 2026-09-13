@@ -290,9 +290,15 @@
        into a grey wash. A short radius is also the cheap one: `backdrop-filter`
        cost grows with the sampled radius as well as the area, so clarity and
        frame budget pull the same direction here. */
-    --glass-blur-2: 6px;
-    --glass-blur-3: 10px;
-    --nav-blur: 6px;
+    /* Blur radius decides how much of the world behind the pane survives. It is
+       kept deliberately small — real glass refracts, it does not frost, so the
+       artwork behind a panel should still be recognisable rather than smeared
+       into a grey wash. These base values are the phone values: mobile GPUs pay
+       full price for every blurred pixel, so handsets get the lightest pass and
+       desktops step up below. */
+    --glass-blur-2: 4px;
+    --glass-blur-3: 6px;
+    --nav-blur: 4px;
     /* A light saturation lift compensates for the tint washing colour out; with
        this little blur the colours behind are real, so it stays gentle. */
     --glass-sat: 135%;
@@ -361,10 +367,10 @@
       --gutter: 1.75rem;
       --player-chrome: 13.5rem;
       /* A desktop pane is larger, so it can carry a touch more radius without
-         losing the detail behind it. */
-      --glass-blur-2: 8px;
-      --glass-blur-3: 12px;
-      --nav-blur: 9px;
+         losing the detail behind it — but still short of frosting. */
+      --glass-blur-2: 6px;
+      --glass-blur-3: 9px;
+      --nav-blur: 5px;
       --glass-sat: 140%;
     }
   }

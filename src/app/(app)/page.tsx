@@ -10,6 +10,7 @@ import { metadata as metadataManager } from '@/lib/metadata/manager';
 import { HOME_RAILS } from '@/lib/metadata/rails';
 import { websiteStructuredData } from '@/lib/seo/structured-data';
 import { SITE } from '@/lib/site';
+import { rotatePeriodic } from '@/lib/utils/rotate';
 import type { MediaSummary } from '@/types/media';
 
 // The catalog is a public, slow-moving dataset — an hour-old home page is fine
@@ -67,8 +68,11 @@ async function HeroSection() {
   }
 
   const pool = interleave(movies.data, series.data);
-  const withArtwork = pool.filter((item) => Boolean(item.backdrop));
-  const items = (withArtwork.length > 0 ? withArtwork : pool).slice(0, HERO_COUNT);
+  // The hero steps through the pool deterministically — one position per 90-minute
+  // bucket — so the featured titles rotate over the day from the same cached fetch.
+  const rotated = rotatePeriodic(pool);
+  const withArtwork = rotated.filter((item) => Boolean(item.backdrop));
+  const items = (withArtwork.length > 0 ? withArtwork : rotated).slice(0, HERO_COUNT);
 
   if (items.length === 0) return null;
 

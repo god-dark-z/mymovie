@@ -121,7 +121,7 @@ export function GlassNav() {
     >
       <nav
         aria-label="Primary"
-        className="glass-nav mx-auto flex h-(--nav-h) w-full items-center gap-1 rounded-full px-1 md:w-fit md:gap-2 md:px-2.5"
+        className="glass-nav pointer-events-auto mx-auto flex h-(--nav-h) w-full items-center gap-1 rounded-full px-1 md:w-fit md:gap-2 md:px-2.5"
       >
         <ul className="flex w-full items-center md:w-auto md:gap-0.5">
           <li className="nav-brand shrink-0">

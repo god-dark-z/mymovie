@@ -51,10 +51,16 @@ export function AuthAtmosphere({ backdrops }: { backdrops: string[] }) {
     };
 
     const tick = () => {
-      current.x += (target.x - current.x) * 0.06;
-      current.y += (target.y - current.y) * 0.06;
-      if (lightRef.current) {
-        lightRef.current.style.transform = `translate3d(${current.x - 288}px, ${current.y - 288}px, 0)`;
+      const dx = target.x - current.x;
+      const dy = target.y - current.y;
+      // Skip the style write once the light has caught up: an idle pointer then
+      // costs zero paint, and the rAF loop is just two float reads.
+      if (Math.abs(dx) > 0.1 || Math.abs(dy) > 0.1) {
+        current.x += dx * 0.06;
+        current.y += dy * 0.06;
+        if (lightRef.current) {
+          lightRef.current.style.transform = `translate3d(${current.x - 288}px, ${current.y - 288}px, 0)`;
+        }
       }
       frame = requestAnimationFrame(tick);
     };

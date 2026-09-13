@@ -2,6 +2,7 @@ import { MediaCard, RailCard } from '@/components/media/MediaCard';
 import { Rail } from '@/components/ui/Rail';
 import { metadata } from '@/lib/metadata/manager';
 import { railHref, type RailDefinition } from '@/lib/metadata/rails';
+import { rotatePeriodic } from '@/lib/utils/rotate';
 
 /**
  * One catalog rail, fetched on the server.
@@ -10,8 +11,11 @@ import { railHref, type RailDefinition } from '@/lib/metadata/rails';
  * immediately and rails fill in as the provider answers, instead of the whole
  * route waiting on the slowest request.
  *
- * A rail that comes back empty renders nothing at all. An empty shelf with a
- * heading looks broken, and a genre the provider has no data for is not news.
+ * The rail's ordering steps by one every 90 minutes (`rotatePeriodic`), so the
+ * page keeps breathing over days without extra catalogue requests or
+ * randomness. A rail that comes back empty renders nothing at all. An empty
+ * shelf with a heading looks broken, and a genre the provider has no data for
+ * is not news.
  */
 export async function MediaRail({
   rail,
@@ -28,9 +32,11 @@ export async function MediaRail({
   const { data } = await metadata.getCatalog(rail.request);
   if (data.length === 0) return null;
 
+  const items = rotatePeriodic(data);
+
   return (
     <Rail title={rail.title} subtitle={rail.subtitle} href={railHref(rail.request)}>
-      {data.map((item, index) => (
+      {items.map((item, index) => (
         <RailCard key={item.id}>
           <MediaCard
             media={item}

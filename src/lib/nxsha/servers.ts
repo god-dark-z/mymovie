@@ -82,7 +82,7 @@ export const PLAYBACK_SERVERS: PlaybackServerConfig[] = [
     provider: 'nxsha',
     label: 'Auto',
     multiLanguage: true,
-    note: 'Nxsha picks a node and fails over on its own',
+    note: 'Picks a node automatically and fails over on its own',
   },
   ...NXSHA_DOCUMENTED_NODES.map((node, index) => ({
     id: `server-${index + 1}`,

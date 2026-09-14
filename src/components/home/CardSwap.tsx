@@ -90,8 +90,14 @@ export function CardSwap({
   indexChange.current = onIndexChange;
 
   useEffect(() => {
+    // Motion weight is device-tiered. The elastic ease runs a 1.6s physics
+    // settle per card per swap — four cards deep, mid-range phone GPUs drop
+    // frames for the whole timeline. Phones get the same choreography on the
+    // cheap `linear` profile (0.7s in-out, no overshoot); the elastic feel is a
+    // desktop-plus pointer-device luxury.
+    const coarse = window.matchMedia('(pointer: coarse)').matches;
     const config =
-      easing === 'elastic'
+      easing === 'elastic' && !coarse
         ? { ease: 'elastic.out(0.6,0.9)', durDrop: 1.6, durMove: 1.6, durReturn: 1.6, promoteOverlap: 0.9, returnDelay: 0.05 }
         : { ease: 'power1.inOut', durDrop: 0.7, durMove: 0.7, durReturn: 0.7, promoteOverlap: 0.45, returnDelay: 0.2 };
 

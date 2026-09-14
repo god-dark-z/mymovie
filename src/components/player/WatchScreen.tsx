@@ -475,9 +475,9 @@ export function WatchScreen({
         ) : null}
 
         <p className="mt-5 max-w-2xl text-xs leading-relaxed text-mist-500">
-          Playback, quality and track switching happen inside the Nxsha player. Cineora passes your
-          server, audio and subtitle choices as documented parameters — whether a source actually
-          carries a language is decided by the provider, not by this app.
+          Playback, quality and track switching happen inside the player itself. Cineora passes your
+          server, audio and subtitle choices along — whether a source actually carries a language is
+          decided by the source, not by this app.
         </p>
       </div>
 
@@ -490,11 +490,6 @@ export function WatchScreen({
         kind={detail.kind}
         season={episodeRef?.season}
         episode={episodeRef?.episode}
-        fallbackHref={
-          detail.ids.imdbId
-            ? `https://web.nxsha.app/dl/${detail.kind === 'movie' ? 'movie' : 'tv'}/${detail.ids.imdbId}`
-            : undefined
-        }
       />
       <ServerSheet
         open={sheet === 'server'}

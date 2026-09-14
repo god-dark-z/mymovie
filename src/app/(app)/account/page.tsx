@@ -17,7 +17,7 @@ export default async function AccountPage({
   return (
     <AccountShell
       title="Your account"
-      description="Who you are on Cineora, which devices are signed in, and what we keep."
+      description="Manage everything about your membership — pick a section below."
     >
       <AccountOverview justReset={params.reset === '1'} />
     </AccountShell>

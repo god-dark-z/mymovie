@@ -19,7 +19,6 @@ export function ProviderDownloadButton({
   kind,
   season,
   episode,
-  fallbackHref,
   className,
 }: {
   title: string;
@@ -28,8 +27,6 @@ export function ProviderDownloadButton({
   kind: 'movie' | 'tv' | 'anime';
   season?: number;
   episode?: number;
-  /** Last-resort escape hatch when resolution fails. */
-  fallbackHref?: string;
   className?: string;
 }) {
   const [open, setOpen] = useState(false);
@@ -49,7 +46,6 @@ export function ProviderDownloadButton({
         kind={kind}
         season={season}
         episode={episode}
-        fallbackHref={fallbackHref}
       />
     </>
   );

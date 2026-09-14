@@ -25,7 +25,7 @@ const COPY: Record<
     description: 'Sent as the documented lang parameter, asking the player to preselect that audio track.',
     defaultLabel: 'Player default',
     defaultNote: 'Let the source decide — no language is requested',
-    note: 'Cineora cannot list which audio tracks a title actually carries, because Nxsha publishes no API for that. This is a request; the player’s own menu is the final word.',
+    note: 'Cineora cannot list which audio tracks a title actually carries, because the player publishes no track list. This is a request; the player’s own menu is the final word.',
   },
   subtitle: {
     title: 'Subtitles',

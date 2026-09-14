@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { Button } from '@/components/ui/Button';
-import { DownloadIcon, ExternalIcon, SpinnerIcon } from '@/components/ui/Icons';
+import { DownloadIcon, SpinnerIcon } from '@/components/ui/Icons';
 import { Sheet } from '@/components/ui/Sheet';
 import { cn } from '@/lib/utils/cn';
 
@@ -26,8 +26,6 @@ export interface ProviderDownloadSheetProps {
   kind: 'movie' | 'tv' | 'anime';
   season?: number;
   episode?: number;
-  /** Where to send the reader if resolution fails outright. */
-  fallbackHref?: string;
 }
 
 interface SourceLink {
@@ -62,7 +60,6 @@ export function ProviderDownloadSheet({
   kind,
   season,
   episode,
-  fallbackHref,
 }: ProviderDownloadSheetProps) {
   const [phase, setPhase] = useState<Phase>('loading');
   const [servers, setServers] = useState<ServerGroup[]>([]);
@@ -162,21 +159,9 @@ export function ProviderDownloadSheet({
             The download service did not respond just now. This is usually temporary — the
             nodes may be between refreshes.
           </p>
-          <div className="flex flex-wrap justify-center gap-2.5">
-            <Button variant="accent" size="md" onClick={() => void resolve()}>
-              Retry
-            </Button>
-            {fallbackHref ? (
-              <a
-                href={fallbackHref}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="tap inline-flex h-11 items-center gap-2 rounded-full border border-(--glass-line) px-5 text-[0.8125rem] font-medium text-mist-200 transition-colors duration-200 md:hover:bg-white/8"
-              >
-                Open source page <ExternalIcon className="size-3.5" />
-              </a>
-            ) : null}
-          </div>
+          <Button variant="accent" size="md" onClick={() => void resolve()}>
+            Retry
+          </Button>
         </div>
       ) : null}
 

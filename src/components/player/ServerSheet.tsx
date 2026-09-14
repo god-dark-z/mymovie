@@ -3,9 +3,7 @@
 import { OptionList, OptionRow, ToggleRow } from '@/components/player/SheetControls';
 import { Badge } from '@/components/ui/Badge';
 import { InlineNotice } from '@/components/ui/ErrorState';
-import { ExternalIcon } from '@/components/ui/Icons';
 import { Sheet } from '@/components/ui/Sheet';
-import { NXSHA_DOCS_URL } from '@/lib/nxsha/provider';
 import { AUTO_SERVER_ID, PLAYBACK_SERVERS } from '@/lib/nxsha/servers';
 
 /**
@@ -43,7 +41,7 @@ export function ServerSheet({
       open={open}
       onClose={onClose}
       title="Playback server"
-      description="Auto lets Nxsha choose a node and fall back on its own. Pick a specific server if a title will not start."
+      description="Auto lets the player choose a node and fall back on its own. Pick a specific server if a title will not start."
       size="lg"
     >
       <div className="flex flex-col gap-2 pb-2">
@@ -58,7 +56,7 @@ export function ServerSheet({
             checked={lockServer}
             onChange={onLockChange}
             title="Play only this server"
-            description="Sends the documented one_server parameter, so Nxsha stops falling back to other nodes. Useful for testing one source, worse for reliability."
+            description="Locks playback to one node. Useful for testing one source, worse for reliability."
           />
         ) : null}
       </div>
@@ -94,20 +92,10 @@ export function ServerSheet({
       </OptionList>
 
       <InlineNotice className="mt-4">
-        Cineora can tell that an embed never loaded. It cannot see inside the player, so it never
+        Cineora can tell that a player never loaded. It cannot see inside the player, so it never
         reports whether video is actually playing — if a source stays silent or stalls, switch server
         here.
       </InlineNotice>
-
-      <a
-        href={NXSHA_DOCS_URL}
-        target="_blank"
-        rel="noopener noreferrer"
-        className="mt-3 inline-flex items-center gap-1.5 text-xs text-mist-500 transition-colors duration-200 hover:text-mist-200"
-      >
-        Nxsha embed documentation
-        <ExternalIcon className="size-3.5" />
-      </a>
     </Sheet>
   );
 }

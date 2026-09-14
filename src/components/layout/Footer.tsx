@@ -2,8 +2,8 @@ import Link from 'next/link';
 import { CineoraLogo } from '@/components/brand/Logo';
 
 /**
- * Footer. States plainly what Cineora is and where the data and playback come
- * from — the app aggregates public, documented services and hosts nothing itself.
+ * Footer. Browse links and the brand line — nothing that names the services
+ * behind the catalogue or the player. Those are implementation details.
  */
 const COLUMNS = [
   {
@@ -67,11 +67,12 @@ export function Footer() {
           </div>
         </div>
 
-        <p className="mt-10 border-t border-(--glass-line) pt-6 text-[0.6875rem] leading-relaxed text-mist-500">
-          Cineora is a personal, non-commercial project. Metadata is provided by Cinemeta, the public catalogue behind
-          Stremio. Playback is provided by the Nxsha embed service. All trademarks and artwork belong to their
-          respective owners.
-        </p>
+        <div className="mt-10 flex flex-col items-center gap-1.5 border-t border-(--glass-line) pt-6 text-center md:flex-row md:justify-between md:text-left">
+          <p className="text-[0.6875rem] text-mist-500">
+            © {new Date().getFullYear()} Cineora. All rights reserved.
+          </p>
+          <p className="text-[0.6875rem] text-mist-500">Developed by Team Dragons with love</p>
+        </div>
       </div>
     </footer>
   );

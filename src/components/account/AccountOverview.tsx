@@ -1,58 +1,86 @@
 'use client';
 
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
-import { AccountCard } from '@/components/account/AccountShell';
 import { useAuth } from '@/components/account/AuthProvider';
-import { Avatar } from '@/components/account/Avatar';
 import { VerifyEmailNotice } from '@/components/account/VerifyEmailNotice';
-import { Button } from '@/components/ui/Button';
 import { FormAlert } from '@/components/ui/Form';
-import { cn } from '@/lib/utils/cn';
 import {
   BellIcon,
+  BookmarkIcon,
   CheckIcon,
-  DeviceIcon,
+  ChevronRightIcon,
   DownloadIcon,
-  ExportIcon,
-  LogOutIcon,
+  EyeIcon,
+  LockIcon,
   ShieldIcon,
   UserIcon,
 } from '@/components/ui/Icons';
-import { api } from '@/lib/auth/client';
-import { EVENT_LABELS, formatDay, formatMoment } from '@/lib/auth/labels';
-import type { ActivityResponse, SessionsResponse } from '@/lib/auth/types';
-import { formatRelativeTime } from '@/lib/utils/format';
+import { formatDay } from '@/lib/auth/labels';
+import { cn } from '@/lib/utils/cn';
 
 /**
- * Account overview.
+ * The account hub home.
  *
- * Two summaries are loaded here — device count and the last few security events —
- * because the point of this screen is to answer "is anything wrong with my account"
- * in one glance. Both are best-effort: a failed read leaves the tile blank rather
- * than replacing the whole page with an error.
+ * This screen is a *menu*, not a dashboard: one curated column of large, quiet
+ * rows — each an answer to "what can I manage here?" — with the details one tap
+ * away in their own section. Everything that used to live here as cards (tiles,
+ * the activity feed, account facts) still exists; it just lives in the section
+ * it belongs to now — the activity log under Security, the email switches under
+ * Notifications, deletion under Privacy.
  */
+
+const HUB_ROWS: ReadonlyArray<{
+  href: string;
+  icon: React.ReactNode;
+  title: string;
+  description: string;
+}> = [
+  {
+    href: '/account/profile',
+    icon: <UserIcon className="size-5" />,
+    title: 'Profile',
+    description: 'Your name, handle, bio and profile picture.',
+  },
+  {
+    href: '/account/security',
+    icon: <ShieldIcon className="size-5" />,
+    title: 'Security',
+    description: 'Password, and the full account activity log.',
+  },
+  {
+    href: '/account/sessions',
+    icon: <LockIcon className="size-5" />,
+    title: 'Devices',
+    description: 'Everything currently signed in to your account.',
+  },
+  {
+    href: '/account/preferences',
+    icon: <EyeIcon className="size-5" />,
+    title: 'Preferences',
+    description: 'Appearance, languages and playback defaults.',
+  },
+  {
+    href: '/account/notifications',
+    icon: <BellIcon className="size-5" />,
+    title: 'Notifications',
+    description: 'What lands in your inbox, and when.',
+  },
+  {
+    href: '/account/privacy',
+    icon: <DownloadIcon className="size-5" />,
+    title: 'Privacy & data',
+    description: 'Export a copy of your data, or delete the account.',
+  },
+  {
+    href: '/downloads',
+    icon: <BookmarkIcon className="size-5" />,
+    title: 'Downloads',
+    description: 'Titles saved for offline viewing.',
+  },
+];
+
 export function AccountOverview({ justReset }: { justReset: boolean }) {
   const { user } = useAuth();
-  const [deviceCount, setDeviceCount] = useState<number | null>(null);
-  const [recent, setRecent] = useState<ActivityResponse['activity'] | null>(null);
-
-  useEffect(() => {
-    let live = true;
-    void (async () => {
-      const [sessions, activity] = await Promise.all([
-        api<SessionsResponse>('/api/security/sessions').catch(() => null),
-        api<ActivityResponse>('/api/security/activity?limit=4').catch(() => null),
-      ]);
-      if (!live) return;
-      if (sessions) setDeviceCount(sessions.sessions.length);
-      if (activity) setRecent(activity.activity);
-    })();
-    return () => {
-      live = false;
-    };
-  }, []);
 
   if (!user) return null;
   const zone = user.preferences.timezone;
@@ -67,189 +95,44 @@ export function AccountOverview({ justReset }: { justReset: boolean }) {
 
       {user.emailVerified ? null : <VerifyEmailNotice email={user.email} />}
 
-      {/* Member-since line: the hero band carries identity; this carries tenure. */}
-      <p className="text-[0.8125rem] text-mist-500">
-        Member since {formatDay(user.createdAt, zone)}
-      </p>
-
-      <div className="grid grid-cols-2 gap-3 md:gap-4">
-        <Tile
-          href="/account/profile"
-          icon={<UserIcon className="size-[1.125rem]" />}
-          label="Profile"
-          value={user.username ? `@${user.username}` : 'Add a handle'}
-          primary
-        />
-        <Tile
-          href="/account/sessions"
-          icon={<DeviceIcon className="size-[1.125rem]" />}
-          label="Devices"
-          value={
-            deviceCount === null
-              ? '—'
-              : deviceCount === 1
-                ? 'This one only'
-                : `${deviceCount} signed in`
-          }
-        />
-        <Tile
-          href="/account/security"
-          icon={<ShieldIcon className="size-[1.125rem]" />}
-          label="Security"
-          value="Password & log"
-        />
-        <Tile
-          href="/downloads"
-          icon={<DownloadIcon className="size-[1.125rem]" />}
-          label="Downloads"
-          value="Offline library"
-        />
-      </div>
-
-      <AccountCard
-        title="Recent account activity"
-        description="The last few things that happened to this account. The full log lives under Security."
-      >
-        {recent === null ? (
-          <p className="text-[0.8125rem] text-mist-500">Loading…</p>
-        ) : recent.length === 0 ? (
-          <p className="text-[0.8125rem] text-mist-500">Nothing recorded yet.</p>
-        ) : (
-          <ul className="flex flex-col divide-y divide-(--glass-line)">
-            {recent.map((item) => (
-              <li key={item.id} className="flex items-start justify-between gap-3 py-2.5 first:pt-0 last:pb-0">
-                <div className="min-w-0">
-                  <p className="text-[0.8125rem] font-medium text-mist-100">{EVENT_LABELS[item.type]}</p>
-                  <p className="mt-0.5 truncate text-xs text-mist-500">
-                    {item.device}
-                    {item.detail ? ` · ${item.detail}` : ''}
-                  </p>
-                </div>
-                <time
-                  dateTime={new Date(item.at).toISOString()}
-                  title={formatMoment(item.at, zone)}
-                  className="shrink-0 pt-0.5 text-xs text-mist-500"
-                >
-                  {formatRelativeTime(item.at)}
-                </time>
-              </li>
-            ))}
-          </ul>
-        )}
-      </AccountCard>
-
-      <AccountCard
-        title="Notifications and data"
-        description="Choose what lands in your inbox, take a copy of your data, or close the account."
-      >
-        <div className="flex flex-col gap-2">
-          <RowLink href="/account/notifications" icon={<BellIcon className="size-[1.0625rem]" />}>
-            Email notifications
-          </RowLink>
-          <RowLink href="/account/privacy" icon={<ExportIcon className="size-[1.0625rem]" />}>
-            Privacy, export and deletion
-          </RowLink>
-        </div>
-      </AccountCard>
-
-      {/* Account facts that are read-only by nature: identity lives in the hero,
-          but the email and tenure belong somewhere scannable too. */}
-      <AccountCard title="Account information">
-        <dl className="flex flex-col gap-2.5 text-[0.8125rem]">
-          <div className="flex items-center justify-between gap-4">
-            <dt className="text-mist-500">Email</dt>
-            <dd className="truncate font-medium text-mist-100">{user.email}</dd>
-          </div>
-          <div className="flex items-center justify-between gap-4">
-            <dt className="shrink-0 text-mist-500">Status</dt>
-            <dd>
-              {user.emailVerified ? (
-                <span className="inline-flex items-center gap-1 rounded-full border border-jade-400/30 bg-jade-400/10 px-2 py-0.5 text-[0.6875rem] font-medium text-jade-300">
-                  <CheckIcon className="size-3" />
-                  Active · verified
-                </span>
-              ) : (
-                <span className="inline-flex items-center gap-1 rounded-full border border-gold-400/30 bg-gold-400/10 px-2 py-0.5 text-[0.6875rem] font-medium text-gold-400">
-                  Awaiting confirmation
-                </span>
+      {/* The hub menu: large, quiet rows. Hover raises the row and lights its
+          icon — the same accent language as the sidebar, one size up. */}
+      <nav aria-label="Account sections" className="animate-fade-in flex flex-col gap-3">
+        {HUB_ROWS.map((row) => (
+          <Link
+            key={row.href}
+            href={row.href}
+            className="tap glass-1 group/row flex items-center gap-4 rounded-3xl p-4 transition-all duration-300 ease-glass md:p-5 md:hover:-translate-y-0.5 md:hover:bg-white/[0.06]"
+          >
+            <span
+              aria-hidden
+              className={cn(
+                'grid size-12 shrink-0 place-items-center rounded-2xl bg-white/[0.04] text-ruby-300 ring-1 ring-inset ring-white/10 transition-colors duration-300 md:group-hover/row:ring-white/20',
               )}
-            </dd>
-          </div>
-          <div className="flex items-center justify-between gap-4">
-            <dt className="text-mist-500">Member since</dt>
-            <dd className="font-medium text-mist-100">{formatDay(user.createdAt, zone)}</dd>
-          </div>
-        </dl>
-        <p className="mt-3 border-t border-(--glass-line) pt-3 text-xs leading-relaxed text-mist-500">
-          Signing out lives in the sidebar. To close this account entirely, see{' '}
-          <Link href="/account/privacy" className="underline decoration-white/25 underline-offset-4">
-            Privacy &amp; data
+            >
+              {row.icon}
+            </span>
+            <span className="min-w-0 flex-1">
+              <span className="block text-[0.9375rem] font-semibold text-white md:text-base">
+                {row.title}
+              </span>
+              <span className="mt-0.5 block truncate text-[0.8125rem] text-mist-500">
+                {row.description}
+              </span>
+            </span>
+            <ChevronRightIcon
+              aria-hidden
+              className="size-4 shrink-0 text-mist-600 transition-all duration-300 md:group-hover/row:translate-x-0.5 md:group-hover/row:text-white"
+            />
           </Link>
-          .
-        </p>
-      </AccountCard>
+        ))}
+      </nav>
+
+      {/* Tenure line — the one fact worth surfacing on this screen. */}
+      <p className="mt-5 flex items-center gap-2 text-xs text-mist-500">
+        <CheckIcon aria-hidden className="size-3.5 text-jade-400" />
+        Member since {formatDay(user.createdAt, zone)} · {user.email}
+      </p>
     </>
-  );
-}
-
-function Tile({
-  href,
-  icon,
-  label,
-  value,
-  primary,
-}: {
-  href: string;
-  icon: React.ReactNode;
-  label: string;
-  value: string;
-  /** The primary tile uses glass-3 + accent tint for visual hierarchy. */
-  primary?: boolean;
-}) {
-  return (
-    <Link
-      href={href}
-      className={cn(
-        'tap flex min-h-[5.5rem] flex-col justify-between rounded-3xl px-3.5 py-3.5 transition-colors duration-200 ease-glass',
-        primary
-          ? 'glass-3 md:hover:bg-white/10'
-          : 'glass-2 md:hover:bg-white/8',
-      )}
-    >
-      <span aria-hidden className={primary ? 'text-ruby-300' : 'text-mist-400'}>
-        {icon}
-      </span>
-      <span>
-        <span className="block text-[0.6875rem] font-medium tracking-wide text-mist-500 uppercase">
-          {label}
-        </span>
-        <span className="mt-0.5 block truncate text-[0.8125rem] font-medium text-mist-100">{value}</span>
-      </span>
-    </Link>
-  );
-}
-
-function RowLink({
-  href,
-  icon,
-  children,
-}: {
-  href: string;
-  icon: React.ReactNode;
-  children: React.ReactNode;
-}) {
-  return (
-    <Link
-      href={href}
-      className="tap flex min-h-12 items-center gap-3 rounded-2xl border border-(--glass-line) bg-white/4 px-3.5 text-[0.8125rem] font-medium text-mist-100 transition-colors duration-200 ease-glass md:hover:bg-white/7"
-    >
-      <span aria-hidden className="shrink-0 text-mist-400">
-        {icon}
-      </span>
-      <span className="min-w-0 flex-1">{children}</span>
-      <span aria-hidden className="shrink-0 text-mist-600">
-        →
-      </span>
-    </Link>
   );
 }

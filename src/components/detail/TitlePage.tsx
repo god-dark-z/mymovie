@@ -45,11 +45,7 @@ export function TitlePage({
   // its own files. Otherwise provider downloads resolve through Cineora's server in
   // the background — the provider's endpoints and security nodes stay hidden.
   const offer = offerFor(detail.id);
-  const providerTmdbId = detail.ids.tmdbId;
-  const hasProviderDownload = Boolean(providerTmdbId || detail.ids.imdbId);
-  const providerFallback = detail.ids.imdbId
-    ? `https://web.nxsha.app/dl/${detail.kind === 'movie' ? 'movie' : 'tv'}/${detail.ids.imdbId}`
-    : undefined;
+  const hasProviderDownload = Boolean(detail.ids.tmdbId || detail.ids.imdbId);
 
   return (
     <div className="animate-fade-in pb-shell">
@@ -66,10 +62,9 @@ export function TitlePage({
             {!offer && hasProviderDownload ? (
               <ProviderDownloadButton
                 title={detail.title}
-                tmdbId={providerTmdbId}
+                tmdbId={detail.ids.tmdbId}
                 imdbId={detail.ids.imdbId}
                 kind={detail.kind}
-                fallbackHref={providerFallback}
               />
             ) : null}
             {!playable ? (

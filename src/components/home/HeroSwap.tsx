@@ -68,8 +68,13 @@ export function HeroSwap({ items }: { items: MediaSummary[] }) {
 
   return (
     <section className="relative overflow-hidden">
-      {/* Blurred backdrop of the front title — the cinematic base layer. */}
-      <div aria-hidden className="absolute inset-0">
+      {/* Blurred backdrop of the front title — the cinematic base layer.
+          DESKTOP ONLY: a full-bleed blur-2xl re-filters the entire hero region
+          on every swap, which mid-range phone GPUs cannot do in a frame — the
+          swap itself then stutters for a second or two. Phones get the same
+          gradient scrim alone (the stack still carries the artwork), and the
+          expensive backdrop joins at md where the hardware can pay for it. */}
+      <div aria-hidden className="absolute inset-0 hidden md:block">
         <div key={front.id} className="absolute inset-0 animate-fade-in">
           <PosterImage
             src={backdropUrl(front.backdrop)}
@@ -82,6 +87,8 @@ export function HeroSwap({ items }: { items: MediaSummary[] }) {
         <div className="absolute inset-0 bg-linear-to-t from-ink-950 via-ink-950/78 to-ink-950/55" />
         <div className="absolute inset-x-0 bottom-0 h-1/3 bg-linear-to-t from-ink-950 to-transparent" />
       </div>
+      {/* The mobile base: one cheap gradient, no image behind it. */}
+      <div aria-hidden className="absolute inset-0 bg-linear-to-t from-ink-950 via-ink-950/92 to-ink-950/78 md:hidden" />
 
       <div className="gutter-x relative flex min-h-[72svh] flex-col items-center justify-center gap-10 pt-[calc(var(--spacing-safe-t)+1.5rem)] pb-14 md:min-h-[78svh] md:flex-row md:items-center md:justify-between md:gap-14">
         {/* Info panel for whichever card is at the front. CardSwap announces the
